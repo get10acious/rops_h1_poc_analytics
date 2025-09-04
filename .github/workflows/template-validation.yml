@@ -1,0 +1,60 @@
+name: Template Validation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-template:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Install uv
+      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+    
+    - name: Install backend dependencies
+      run: |
+        cd backend
+        uv venv
+        source venv/bin/activate
+        uv pip install -r requirements.txt
+    
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm install
+    
+    - name: Validate backend code
+      run: |
+        cd backend
+        source venv/bin/activate
+        python -m py_compile main.py
+        python -m py_compile config.py
+        python -m py_compile langgraph_agent.py
+    
+    - name: Validate frontend code
+      run: |
+        cd frontend
+        npm run type-check
+    
+    - name: Check documentation
+      run: |
+        test -f README.md
+        test -f docs/AI_GUIDE.md
+        test -f docs/CHALLENGE_BRIEF.md
+        test -f docs/DEVELOPMENT_PATTERNS.md
+        test -f docs/MCP_INTEGRATION_GUIDE.md
