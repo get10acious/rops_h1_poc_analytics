@@ -42,7 +42,7 @@ create-template-repo: setup-template ## Create GitHub repository and set as temp
 	@read -p "Press Enter to continue or Ctrl+C to cancel..."
 	gh repo create $(GITHUB_ORG)/$(TEMPLATE_NAME) \
 		--public \
-		--description "Cookie-cutter template for building natural language analytics systems with MCP integration"
+		--description "GitHub template repository for building natural language analytics systems with MCP integration"
 	@echo "$(GREEN)>>> Repository created!$(RESET)"
 
 push-template: ## Push code to GitHub template repository

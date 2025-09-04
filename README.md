@@ -1,6 +1,6 @@
 # RewardOps AI Fluency - Natural Language Analytics POC
 
-A cookie-cutter template for building an intelligent admin homepage with natural language analytics capabilities. This template provides the foundation for students to implement a real-time analytics chatbot that can query databases and generate visualizations using natural language.
+A GitHub template repository for building an intelligent admin homepage with natural language analytics capabilities. This template provides the foundation for students to implement a real-time analytics chatbot that can query databases and generate visualizations using natural language.
 
 ## 🎯 Project Overview
 

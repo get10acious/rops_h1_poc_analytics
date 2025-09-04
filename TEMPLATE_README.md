@@ -4,7 +4,7 @@ This document provides instructions for managing the RewardOps Analytics POC Tem
 
 ## Overview
 
-This repository serves as a cookie-cutter template for students to build natural language analytics systems with MCP integration. The template includes comprehensive documentation, boilerplate code, and AI assistant guidance.
+This repository serves as a GitHub template repository for students to build natural language analytics systems with MCP integration. The template includes comprehensive documentation, boilerplate code, and AI assistant guidance.
 
 ## Template Management Commands
 
@@ -131,7 +131,7 @@ Students will:
 - **Template Repository**: https://github.com/get10acious/rewardops-analytics-poc-template
 - **Organization**: get10acious
 - **Template Name**: rewardops-analytics-poc-template
-- **Description**: Cookie-cutter template for building natural language analytics systems with MCP integration
+- **Description**: GitHub template repository for building natural language analytics systems with MCP integration
 
 ## Troubleshooting
 
