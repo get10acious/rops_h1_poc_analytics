@@ -1,0 +1,317 @@
+# GitHub Template Management Makefile
+# This Makefile helps manage the repository as a GitHub template
+
+.PHONY: help setup-template create-template-repo push-template update-template clean-template
+
+# Colors for output
+CYAN := \033[36m
+GREEN := \033[32m
+YELLOW := \033[33m
+RED := \033[31m
+RESET := \033[0m
+
+# Variables
+REPO_NAME := rops_h1_poc_analytics
+TEMPLATE_NAME := rewardops-analytics-poc-template
+GITHUB_USER := $(shell git config user.name)
+GITHUB_ORG := 10academy
+TEMPLATE_DESCRIPTION := "Cookie-cutter template for building natural language analytics systems with MCP integration"
+
+help: ## Show this help message
+	@echo "$(CYAN)GitHub Template Management - Available Commands:$(RESET)"
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(GREEN)%-20s$(RESET) %s\n", $$1, $$2}'
+
+setup-template: ## Prepare repository for GitHub template
+	@echo "$(CYAN)Setting up repository as GitHub template...$(RESET)"
+	@echo "$(YELLOW)>>> Creating .github directory structure...$(RESET)"
+	mkdir -p .github/workflows
+	mkdir -p .github/ISSUE_TEMPLATE
+	mkdir -p .github/PULL_REQUEST_TEMPLATE
+	@echo "$(GREEN)>>> Template structure created!$(RESET)"
+
+create-template-repo: setup-template ## Create GitHub repository and set as template
+	@echo "$(CYAN)Creating GitHub repository as template...$(RESET)"
+	@echo "$(YELLOW)>>> Repository will be created at: https://github.com/$(GITHUB_ORG)/$(TEMPLATE_NAME)$(RESET)"
+	@echo "$(YELLOW)>>> Make sure you have GitHub CLI installed and authenticated$(RESET)"
+	@read -p "Press Enter to continue or Ctrl+C to cancel..."
+	gh repo create $(GITHUB_ORG)/$(TEMPLATE_NAME) \
+		--public \
+		--description $(TEMPLATE_DESCRIPTION) \
+		--template=false
+	@echo "$(GREEN)>>> Repository created!$(RESET)"
+
+push-template: ## Push code to GitHub template repository
+	@echo "$(CYAN)Pushing code to GitHub template repository...$(RESET)"
+	git remote add template https://github.com/$(GITHUB_ORG)/$(TEMPLATE_NAME).git || true
+	git push template main
+	@echo "$(GREEN)>>> Code pushed to template repository!$(RESET)"
+
+update-template: ## Update existing GitHub template
+	@echo "$(CYAN)Updating GitHub template...$(RESET)"
+	git add .
+	git commit -m "Update template: $(shell date +'%Y-%m-%d %H:%M:%S')" || true
+	git push template main
+	@echo "$(GREEN)>>> Template updated!$(RESET)"
+
+enable-template: ## Enable template feature on GitHub repository
+	@echo "$(CYAN)Enabling template feature on GitHub repository...$(RESET)"
+	@echo "$(YELLOW)>>> This must be done manually in GitHub web interface$(RESET)"
+	@echo "$(YELLOW)>>> Go to: https://github.com/$(GITHUB_ORG)/$(TEMPLATE_NAME)/settings$(RESET)"
+	@echo "$(YELLOW)>>> Check 'Template repository' under 'Repository name' section$(RESET)"
+	@read -p "Press Enter when template feature is enabled..."
+
+create-workflows: ## Create GitHub Actions workflows for template
+	@echo "$(CYAN)Creating GitHub Actions workflows...$(RESET)"
+	@echo "$(YELLOW)>>> Creating template validation workflow...$(RESET)"
+	@cat > .github/workflows/template-validation.yml << 'EOF'
+name: Template Validation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-template:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Install uv
+      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+    
+    - name: Install backend dependencies
+      run: |
+        cd backend
+        uv venv
+        source venv/bin/activate
+        uv pip install -r requirements.txt
+    
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm install
+    
+    - name: Validate backend code
+      run: |
+        cd backend
+        source venv/bin/activate
+        python -m py_compile main.py
+        python -m py_compile config.py
+        python -m py_compile langgraph_agent.py
+    
+    - name: Validate frontend code
+      run: |
+        cd frontend
+        npm run type-check
+    
+    - name: Check documentation
+      run: |
+        test -f README.md
+        test -f docs/AI_GUIDE.md
+        test -f docs/CHALLENGE_BRIEF.md
+        test -f docs/DEVELOPMENT_PATTERNS.md
+        test -f docs/MCP_INTEGRATION_GUIDE.md
+EOF
+	@echo "$(GREEN)>>> Workflows created!$(RESET)"
+
+create-issue-templates: ## Create GitHub issue templates
+	@echo "$(CYAN)Creating GitHub issue templates...$(RESET)"
+	@echo "$(YELLOW)>>> Creating bug report template...$(RESET)"
+	@cat > .github/ISSUE_TEMPLATE/bug_report.md << 'EOF'
+---
+name: Bug report
+about: Create a report to help us improve the template
+title: '[BUG] '
+labels: bug
+assignees: ''
+---
+
+**Describe the bug**
+A clear and concise description of what the bug is.
+
+**To Reproduce**
+Steps to reproduce the behavior:
+1. Clone the template
+2. Run 'make install'
+3. Run 'make dev'
+4. See error
+
+**Expected behavior**
+A clear and concise description of what you expected to happen.
+
+**Screenshots**
+If applicable, add screenshots to help explain your problem.
+
+**Environment (please complete the following information):**
+ - OS: [e.g. macOS, Ubuntu, Windows]
+ - Python version: [e.g. 3.11]
+ - Node.js version: [e.g. 18]
+ - Browser: [e.g. Chrome, Firefox]
+
+**Additional context**
+Add any other context about the problem here.
+EOF
+
+	@echo "$(YELLOW)>>> Creating feature request template...$(RESET)"
+	@cat > .github/ISSUE_TEMPLATE/feature_request.md << 'EOF'
+---
+name: Feature request
+about: Suggest an idea for this template
+title: '[FEATURE] '
+labels: enhancement
+assignees: ''
+---
+
+**Is your feature request related to a problem? Please describe.**
+A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+
+**Describe the solution you'd like**
+A clear and concise description of what you want to happen.
+
+**Describe alternatives you've considered**
+A clear and concise description of any alternative solutions or features you've considered.
+
+**Additional context**
+Add any other context or screenshots about the feature request here.
+EOF
+
+	@echo "$(GREEN)>>> Issue templates created!$(RESET)"
+
+create-pr-template: ## Create GitHub pull request template
+	@echo "$(CYAN)Creating GitHub pull request template...$(RESET)"
+	@cat > .github/pull_request_template.md << 'EOF'
+## Description
+Brief description of the changes made to the template.
+
+## Type of Change
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Documentation update
+- [ ] Template improvement
+
+## Testing
+- [ ] I have tested these changes locally
+- [ ] I have verified the template works with `make dev`
+- [ ] I have updated documentation if necessary
+
+## Checklist
+- [ ] My code follows the project's style guidelines
+- [ ] I have performed a self-review of my code
+- [ ] I have commented my code, particularly in hard-to-understand areas
+- [ ] I have made corresponding changes to the documentation
+- [ ] My changes generate no new warnings or errors
+
+## Additional Notes
+Any additional information that reviewers should know.
+EOF
+	@echo "$(GREEN)>>> Pull request template created!$(RESET)"
+
+create-template-files: ## Create template-specific files
+	@echo "$(CYAN)Creating template-specific files...$(RESET)"
+	@echo "$(YELLOW)>>> Creating template.json...$(RESET)"
+	@cat > template.json << 'EOF'
+{
+  "name": "RewardOps Analytics POC Template",
+  "description": "Cookie-cutter template for building natural language analytics systems with MCP integration",
+  "version": "1.0.0",
+  "author": "10academy",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/10academy/rewardops-analytics-poc-template.git"
+  },
+  "keywords": [
+    "analytics",
+    "mcp",
+    "fastapi",
+    "react",
+    "postgresql",
+    "natural-language",
+    "ai",
+    "template"
+  ],
+  "features": [
+    "FastAPI backend with WebSocket support",
+    "React frontend with TypeScript",
+    "MCP (Model Context Protocol) integration",
+    "PostgreSQL database with sample data",
+    "Docker containerization",
+    "Comprehensive documentation",
+    "AI assistant integration guide"
+  ],
+  "requirements": {
+    "python": ">=3.11",
+    "node": ">=18",
+    "docker": ">=20.0",
+    "make": ">=4.0"
+  }
+}
+EOF
+
+	@echo "$(YELLOW)>>> Creating .templateignore...$(RESET)"
+	@cat > .templateignore << 'EOF'
+# Template ignore file - these files will be excluded when using the template
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+frontend/node_modules/
+frontend/.next/
+*.log
+.env
+.env.local
+.env.production
+.DS_Store
+Thumbs.db
+EOF
+
+	@echo "$(GREEN)>>> Template files created!$(RESET)"
+
+validate-template: ## Validate template structure and files
+	@echo "$(CYAN)Validating template structure...$(RESET)"
+	@echo "$(YELLOW)>>> Checking required files...$(RESET)"
+	@test -f README.md || (echo "$(RED)ERROR: README.md not found$(RESET)" && exit 1)
+	@test -f docs/AI_GUIDE.md || (echo "$(RED)ERROR: docs/AI_GUIDE.md not found$(RESET)" && exit 1)
+	@test -f docs/CHALLENGE_BRIEF.md || (echo "$(RED)ERROR: docs/CHALLENGE_BRIEF.md not found$(RESET)" && exit 1)
+	@test -f backend/requirements.txt || (echo "$(RED)ERROR: backend/requirements.txt not found$(RESET)" && exit 1)
+	@test -f frontend/package.json || (echo "$(RED)ERROR: frontend/package.json not found$(RESET)" && exit 1)
+	@test -f docker-compose.yml || (echo "$(RED)ERROR: docker-compose.yml not found$(RESET)" && exit 1)
+	@test -f Makefile || (echo "$(RED)ERROR: Makefile not found$(RESET)" && exit 1)
+	@echo "$(GREEN)>>> All required files found!$(RESET)"
+	@echo "$(YELLOW)>>> Checking directory structure...$(RESET)"
+	@test -d backend || (echo "$(RED)ERROR: backend directory not found$(RESET)" && exit 1)
+	@test -d frontend || (echo "$(RED)ERROR: frontend directory not found$(RESET)" && exit 1)
+	@test -d docs || (echo "$(RED)ERROR: docs directory not found$(RESET)" && exit 1)
+	@test -d scripts || (echo "$(RED)ERROR: scripts directory not found$(RESET)" && exit 1)
+	@echo "$(GREEN)>>> Directory structure is valid!$(RESET)"
+
+clean-template: ## Clean up template files
+	@echo "$(CYAN)Cleaning up template files...$(RESET)"
+	rm -rf .github/
+	rm -f template.json
+	rm -f .templateignore
+	@echo "$(GREEN)>>> Template files cleaned up!$(RESET)"
+
+full-setup: setup-template create-workflows create-issue-templates create-pr-template create-template-files validate-template ## Complete template setup
+	@echo "$(GREEN)>>> Template setup completed successfully!$(RESET)"
+	@echo "$(YELLOW)>>> Next steps:$(RESET)"
+	@echo "$(YELLOW)   1. Run 'make create-template-repo' to create GitHub repository$(RESET)"
+	@echo "$(YELLOW)   2. Run 'make push-template' to push code$(RESET)"
+	@echo "$(YELLOW)   3. Run 'make enable-template' and enable template feature in GitHub$(RESET)"
+
+# Default target
+.DEFAULT_GOAL := help

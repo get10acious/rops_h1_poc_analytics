@@ -1,0 +1,32 @@
+{
+  "title": "RewardOps Analytics Dashboard",
+  "theme": "default",
+  "layout": {
+    "grid": true,
+    "columns": 2,
+    "spacing": 20
+  },
+  "charts": {
+    "default_width": 800,
+    "default_height": 600,
+    "supported_types": [
+      "bar",
+      "line", 
+      "pie",
+      "scatter",
+      "area",
+      "heatmap"
+    ]
+  },
+  "colors": {
+    "primary": "#1f77b4",
+    "secondary": "#ff7f0e",
+    "accent": "#2ca02c",
+    "background": "#ffffff",
+    "text": "#333333"
+  },
+  "export": {
+    "formats": ["png", "svg", "pdf"],
+    "default_format": "png"
+  }
+}

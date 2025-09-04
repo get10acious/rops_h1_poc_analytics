@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "database": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-postgres"],
+      "env": {
+        "POSTGRES_CONNECTION_STRING": "postgresql://rewardops:password@localhost:5432/rewardops_db"
+      }
+    },
+    "vizro": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-vizro"],
+      "env": {
+        "VIZRO_CONFIG_PATH": "./vizro_config.json"
+      }
+    }
+  }
+}
