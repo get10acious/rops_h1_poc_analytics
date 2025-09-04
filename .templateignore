@@ -1,0 +1,20 @@
+# Template ignore file - these files will be excluded when using the template
+# Template management files (keep these in source repo but exclude from template)
+Makefile.github
+TEMPLATE_README.md
+.github/
+template.json
+.templateignore
+
+# Development files
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+frontend/node_modules/
+frontend/.next/
+*.log
+.env
+.env.local
+.env.production
+.DS_Store
+Thumbs.db

@@ -1,0 +1,36 @@
+{
+  "name": "RewardOps Analytics POC Template",
+  "description": "Cookie-cutter template for building natural language analytics systems with MCP integration",
+  "version": "1.0.0",
+  "author": "get10acious",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/get10acious/rewardops-analytics-poc-template.git"
+  },
+  "keywords": [
+    "analytics",
+    "mcp",
+    "fastapi",
+    "react",
+    "postgresql",
+    "natural-language",
+    "ai",
+    "template"
+  ],
+  "features": [
+    "FastAPI backend with WebSocket support",
+    "React frontend with TypeScript",
+    "MCP (Model Context Protocol) integration",
+    "PostgreSQL database with sample data",
+    "Docker containerization",
+    "Comprehensive documentation",
+    "AI assistant integration guide"
+  ],
+  "requirements": {
+    "python": ">=3.11",
+    "node": ">=18",
+    "docker": ">=20.0",
+    "make": ">=4.0"
+  }
+}
