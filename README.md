@@ -2,6 +2,23 @@
 
 A complete implementation of an intelligent admin homepage with natural language analytics capabilities. This project demonstrates a fully functional real-time analytics chatbot that can query loyalty program databases and generate visualizations using natural language, built with modern MCP (Model Context Protocol) integration.
 
+## 🚀 Getting Started (TL;DR)
+
+**Quick Setup:**
+```bash
+git clone <your-repo-url>
+cd rops_h1_poc_analytics
+make install
+make docker-up
+make init-db
+make setup-mcp
+make start
+```
+
+**Access:** http://localhost:3000
+
+The Makefile handles all the complexity - just follow the commands above!
+
 ## 🎯 Project Overview
 
 This is a **working implementation** of a dynamic, intelligent "mission control" for loyalty program analytics. The system allows non-technical users to ask plain English questions about merchants, users, and redemption data, receiving interactive data visualizations in real-time.
@@ -54,44 +71,47 @@ git clone <your-repo-url>
 cd rops_h1_poc_analytics
 ```
 
-### 2. Install Dependencies
+### 2. Complete Setup (One Command)
 
 ```bash
-# Install all dependencies (backend + frontend)
+# Install all dependencies and setup everything
 make install
+```
 
-# Or install individually:
-make setup-backend    # Creates .env file automatically
+### 3. Start the Application
+
+The Makefile simplifies the running process. Follow these steps in order:
+
+#### To Start the Frontend:
+```bash
 make setup-frontend
+make start-frontend
 ```
 
-### 3. Setup MCP Servers
-
+#### To Start the Backend and All Necessary Tools:
 ```bash
-# Download and configure MCP Toolbox
-make setup-mcp
+make setup-backend    # Creates .env file automatically
+make init-db          # Initialize database with sample data
+make setup-mcp        # Download and configure MCP Toolbox
+make start-backend    # Start backend with MCP servers
 ```
 
-### 4. Initialize Database
-
-```bash
-# Start PostgreSQL and initialize with sample data
-make docker-up
-make init-db
-```
-
-### 5. Start Development Environment
-
-```bash
-# Start both backend and frontend
-make start
-```
-
-### 6. Access the Application
+### 4. Access the Application
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000
 - **API Documentation**: http://localhost:8000/docs
+
+### Alternative: Start Everything at Once
+
+```bash
+# Complete setup and start both services
+make install
+make docker-up        # Start PostgreSQL
+make init-db          # Initialize database
+make setup-mcp        # Setup MCP servers
+make start            # Start both frontend and backend
+```
 
 ## ✨ Recent Updates
 
@@ -329,11 +349,64 @@ docker-compose down
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+## 🆘 Troubleshooting
+
+### Common Issues
+
+**Database Connection Issues:**
+```bash
+# Check if PostgreSQL is running
+make check-db
+
+# Restart database
+make docker-down
+make docker-up
+make init-db
+```
+
+**MCP Server Issues:**
+```bash
+# Re-setup MCP servers
+make setup-mcp
+
+# Check MCP status
+make status
+```
+
+**Frontend Not Loading:**
+```bash
+# Restart frontend
+make start-frontend
+
+# Check if backend is running
+make status
+```
+
+**Backend Not Starting:**
+```bash
+# Check logs
+make logs-backend
+
+# Restart backend
+make start-backend
+```
+
+### Service Status
+
+```bash
+# Check all services
+make status
+
+# View logs
+make logs-backend
+make logs-frontend
+```
+
 ## 🆘 Support
 
 For support and questions:
 - Check the documentation in the `docs/` directory
-- Review the troubleshooting section in the AI Guide
+- Review the troubleshooting section above
 - Create an issue in the repository
 
 ## 🙏 Acknowledgments
