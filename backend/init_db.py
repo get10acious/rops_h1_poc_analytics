@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Database initialization script for RewardOps AI Fluency system.
+Database initialization script for LoyaltyAnalytics system.
 
 This script:
-1. Creates the 'rewardops' database if it doesn't exist
+1. Creates the 'loyalty_analytics' database if it doesn't exist
 2. Creates the required tables (merchants, users, redemptions)
 3. Inserts sample data for testing
 4. Sets up proper indexes and constraints
@@ -71,7 +71,7 @@ SAMPLE_NAMES = [
 
 
 async def create_database():
-    """Create the rewardops database if it doesn't exist."""
+    """Create the loyalty_analytics database if it doesn't exist."""
     try:
         # Connect to default postgres database
         conn = await asyncpg.connect(
@@ -103,9 +103,9 @@ async def create_database():
 
 
 async def create_tables():
-    """Create the required tables in the rewardops database."""
+    """Create the required tables in the loyalty_analytics database."""
     try:
-        # Connect to rewardops database
+        # Connect to loyalty_analytics database
         conn = await asyncpg.connect(
             host=DB_HOST,
             port=DB_PORT,
@@ -171,7 +171,7 @@ async def create_tables():
 async def insert_sample_data():
     """Insert sample data into the tables."""
     try:
-        # Connect to rewardops database
+        # Connect to loyalty_analytics database
         conn = await asyncpg.connect(
             host=DB_HOST,
             port=DB_PORT,
@@ -247,7 +247,7 @@ async def insert_sample_data():
 async def verify_database():
     """Verify that the database is properly set up."""
     try:
-        # Connect to rewardops database
+        # Connect to loyalty_analytics database
         conn = await asyncpg.connect(
             host=DB_HOST,
             port=DB_PORT,

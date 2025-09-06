@@ -1,5 +1,5 @@
 """
-Configuration management for RewardOps Analytics POC.
+Configuration management for LoyaltyAnalytics POC.
 
 This module handles all configuration settings including environment variables,
 database connections, MCP server configurations, and application settings.
@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     # Database configuration - Individual components for flexibility
     postgres_host: str = Field("localhost", description="PostgreSQL host")
     postgres_port: int = Field(5432, description="PostgreSQL port")
-    postgres_database: str = Field("rewardops", description="PostgreSQL database name")
+    postgres_database: str = Field("loyalty_analytics", description="PostgreSQL database name")
     postgres_user: str = Field("postgres", description="PostgreSQL username")
     postgres_password: str = Field("postgres", description="PostgreSQL password")
     
@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     ws_max_connections: int = Field(100, description="Maximum WebSocket connections")
     
     # Application configuration
-    app_name: str = Field("RewardOps Analytics", description="Application name")
+    app_name: str = Field("LoyaltyAnalytics", description="Application name")
     app_version: str = Field("1.0.0", description="Application version")
     
     # FastAPI Configuration

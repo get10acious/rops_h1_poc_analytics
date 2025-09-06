@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MCP Server Setup for RewardOps AI Analytics
+MCP Server Setup for LoyaltyAnalytics
 Downloads and configures the required MCP servers.
 """
 
@@ -172,7 +172,7 @@ def create_mcp_config():
 
 
 if __name__ == "__main__":
-    logger.info("Setting up MCP servers for RewardOps AI Analytics...")
+    logger.info("Setting up MCP servers for LoyaltyAnalytics...")
     
     try:
         config = create_mcp_config()

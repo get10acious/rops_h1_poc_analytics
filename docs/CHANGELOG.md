@@ -17,11 +17,11 @@ All notable changes to this project will be documented in this file.
 - **Configuration Structure**: Migrated from uppercase to lowercase field names (e.g., `DATABASE_URL` → `database_url`)
 - **MCP Config Format**: Updated from non-working format to proven mcpui-sandbox-chat format
 - **Database Initialization**: Now uses environment variables from settings
-- **Project Name**: Updated from "MCP UI Chat Analytics" to "RewardOps Analytics"
-- **Database Focus**: RewardOps loyalty program schema instead of generic analytics
+- **Project Name**: Updated from "MCP UI Chat Analytics" to "LoyaltyAnalytics"
+- **Database Focus**: Loyalty program schema instead of generic analytics
 
 ### Fixed
-- **Database Name Consistency**: Fixed mismatch between MCP config (`analytics_db`) and init script (`rewardops`)
+- **Database Name Consistency**: Fixed mismatch between MCP config (`analytics_db`) and init script (`loyalty_analytics`)
 - **Case Sensitivity Issues**: Resolved uppercase/lowercase configuration field conflicts
 - **MCP Server Connection**: Fixed connection issues with proper server configuration
 - **Import Cleanup**: Removed unused imports and fixed linting issues
@@ -41,7 +41,7 @@ DATABASE_URL = "postgresql://analytics:password@localhost:5432/analytics_db"
 
 # After  
 postgres_host = "localhost"
-postgres_database = "rewardops"
+postgres_database = "loyalty_analytics"
 # ... individual components with computed database_url property
 ```
 
@@ -72,7 +72,7 @@ postgres_database = "rewardops"
       "env_vars": {
         "POSTGRES_HOST": "localhost",
         "POSTGRES_PORT": "5432",
-        "POSTGRES_DATABASE": "rewardops",
+        "POSTGRES_DATABASE": "loyalty_analytics",
         "POSTGRES_USER": "postgres",
         "POSTGRES_PASSWORD": "postgres"
       }
@@ -86,7 +86,7 @@ postgres_database = "rewardops"
 The system now works with these commands:
 1. `make setup-backend` - Sets up Python environment and creates .env file
 2. `make setup-mcp` - Downloads and configures MCP Toolbox
-3. `make init-db` - Initializes PostgreSQL with RewardOps data
+3. `make init-db` - Initializes PostgreSQL with loyalty program data
 4. `make start-backend` - Starts the FastAPI server
 
 ### Files Modified
@@ -103,7 +103,7 @@ The system now works with these commands:
 ### Breaking Changes
 - Environment variables are now required (auto-created from template)
 - MCP configuration format has changed
-- Database name changed from `analytics_db` to `rewardops`
+- Database name changed from `analytics_db` to `loyalty_analytics`
 - Configuration field names are now lowercase
 
 This update brings the project from a template state to a fully working implementation that can be set up and run with minimal configuration.

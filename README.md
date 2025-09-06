@@ -1,10 +1,10 @@
-# RewardOps Analytics - Natural Language Analytics POC
+# LoyaltyAnalytics - Natural Language Analytics POC
 
 A complete implementation of an intelligent admin homepage with natural language analytics capabilities. This project demonstrates a fully functional real-time analytics chatbot that can query loyalty program databases and generate visualizations using natural language, built with modern MCP (Model Context Protocol) integration.
 
 ## 🎯 Project Overview
 
-This is a **working implementation** of a dynamic, intelligent "mission control" for RewardOps loyalty program analytics. The system allows non-technical users to ask plain English questions about merchants, users, and redemption data, receiving interactive data visualizations in real-time.
+This is a **working implementation** of a dynamic, intelligent "mission control" for loyalty program analytics. The system allows non-technical users to ask plain English questions about merchants, users, and redemption data, receiving interactive data visualizations in real-time.
 
 ### Key Features
 
@@ -12,7 +12,7 @@ This is a **working implementation** of a dynamic, intelligent "mission control"
 - **Interactive Chart.js Visualizations**: Automatic chart and table generation with export/fullscreen capabilities
 - **Complete Tool Ecosystem**: Database queries, Python code execution, and MCP-UI visualization generation
 - **Real-time Chat Interface**: WebSocket-based communication for instant responses
-- **Database Integration**: Direct PostgreSQL connection with RewardOps loyalty program data
+- **Database Integration**: Direct PostgreSQL connection with loyalty program data
 - **MCP Integration**: Model Context Protocol with automated PostgreSQL Toolbox setup
 - **Advanced AI Agent**: LangGraph-based ReAct agent with multi-iteration reasoning and composite tools
 - **Code Sandbox**: Python code execution for custom analytics and data processing
@@ -75,7 +75,7 @@ make setup-mcp
 ### 4. Initialize Database
 
 ```bash
-# Start PostgreSQL and initialize with RewardOps sample data
+# Start PostgreSQL and initialize with sample data
 make docker-up
 make init-db
 ```
@@ -108,7 +108,7 @@ This project has been updated with several key improvements:
 - **Environment-Driven Config**: MCP servers configured from environment variables
 
 ### 🗄️ Database Improvements
-- **RewardOps Schema**: Complete loyalty program database with realistic data
+- **Loyalty Program Schema**: Complete loyalty program database with realistic data
 - **Environment-Driven Init**: Database initialization uses environment settings
 - **Better Error Handling**: Improved logging and error management
 
@@ -338,8 +338,10 @@ For support and questions:
 
 ## 🙏 Acknowledgments
 
-- [Model Context Protocol](https://modelcontextprotocol.io/) for tool integration
+- [Database Toolbox](https://googleapis.github.io/genai-toolbox/) for multi-database tool integration
+- [LLM Sandbox](https://github.com/vndee/llm-sandbox) for secure code execution and agent tool orchestration
+- [MCP-UI Specification](https://github.com/idosal/mcp-ui) for unified tool and UI protocol 
 - [LangGraph](https://github.com/langchain-ai/langgraph) for agent orchestration
-- [Vizro](https://vizro.mckinsey.com/) for visualization generation
+- [FastMCP](https://gofastmcp.com/integrations/fastapi) to build MCP servers and clients 
 - [FastAPI](https://fastapi.tiangolo.com/) for the backend framework
 - [Next.js](https://nextjs.org/) for the frontend framework

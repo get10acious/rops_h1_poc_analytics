@@ -1,6 +1,6 @@
 # MCP Integration Guide
 
-This guide provides comprehensive instructions for setting up and using Model Context Protocol (MCP) servers in the RewardOps Analytics POC project.
+This guide provides comprehensive instructions for setting up and using Model Context Protocol (MCP) servers in the LoyaltyAnalytics POC project.
 
 ## 🎯 Overview
 
@@ -68,7 +68,7 @@ The system automatically creates `backend/mcp_servers/mcp_config.json`:
       "env_vars": {
         "POSTGRES_HOST": "localhost",
         "POSTGRES_PORT": "5432",
-        "POSTGRES_DATABASE": "rewardops",
+        "POSTGRES_DATABASE": "loyalty_analytics",
         "POSTGRES_USER": "postgres",
         "POSTGRES_PASSWORD": "postgres"
       },

@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RewardOps Analytics Dashboard",
-  description: "AI-powered analytics dashboard for RewardOps platform",
+  title: "LoyaltyAnalytics Dashboard",
+  description: "AI-powered analytics dashboard for loyalty programs",
 };
 
 export default function RootLayout({

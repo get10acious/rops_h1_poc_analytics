@@ -1,4 +1,4 @@
-# RewardOps Analytics - Natural Language Analytics POC
+# LoyaltyAnalytics - Natural Language Analytics POC
 
 A complete implementation of an intelligent admin homepage with natural language analytics capabilities. This project demonstrates a fully functional real-time analytics chatbot that can query databases and generate visualizations using natural language, built with modern MCP (Model Context Protocol) integration.
 
@@ -10,7 +10,7 @@ This is a **working implementation** of a dynamic, intelligent "mission control"
 
 - **Natural Language Queries**: Ask questions like "Show me the top 10 merchants by redemption volume this month"
 - **Real-time Chat Interface**: WebSocket-based communication for instant responses
-- **Database Integration**: Direct connection to PostgreSQL with RewardOps loyalty program data
+- **Database Integration**: Direct connection to PostgreSQL with loyalty program data
 - **Dynamic Visualizations**: Automatic chart generation using MCP UI servers
 - **MCP Integration**: Model Context Protocol with PostgreSQL Toolbox for extensible tool integration
 - **AI Agent Orchestration**: LangGraph-based ReAct agent for query processing
@@ -73,7 +73,7 @@ make setup-mcp
 ### 4. Initialize Database
 
 ```bash
-# Start PostgreSQL and initialize with RewardOps sample data
+# Start PostgreSQL and initialize with sample data
 make docker-up
 make init-db
 ```
@@ -189,7 +189,7 @@ rops_h1_poc_analytics/
 
 ## 🗄️ Database Schema
 
-The system includes a RewardOps loyalty program database with realistic sample data:
+The system includes a loyalty program database with realistic sample data:
 
 ### Tables
 
@@ -238,7 +238,7 @@ Key environment variables (in `backend/.env`):
 # Database Configuration
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
-POSTGRES_DATABASE=rewardops
+POSTGRES_DATABASE=loyalty_analytics
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 

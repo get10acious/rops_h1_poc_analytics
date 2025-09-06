@@ -118,7 +118,7 @@ export const useWebSocket = (options: UseWebSocketOptions): UseWebSocketReturn =
               const statusText = statusContent.details || statusContent.status;
               
               // Don't show welcome messages or session messages as persistent status
-              if (statusText.includes('Welcome to RewardOps') || statusText.includes('New session started')) {
+              if (statusText.includes('Welcome to LoyaltyAnalytics') || statusText.includes('New session started')) {
                 // These are informational, not persistent status
                 break;
               }

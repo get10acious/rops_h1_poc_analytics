@@ -13,7 +13,7 @@
       "env_vars": {
         "POSTGRES_HOST": "localhost",
         "POSTGRES_PORT": "5432",
-        "POSTGRES_DATABASE": "rewardops",
+        "POSTGRES_DATABASE": "loyalty_analytics",
         "POSTGRES_USER": "postgres",
         "POSTGRES_PASSWORD": "postgres"
       },

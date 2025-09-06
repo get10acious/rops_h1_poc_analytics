@@ -60,7 +60,7 @@ export default function AdminDashboard() {
       <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
-          <h1 className="text-3xl font-semibold text-gray-900">RewardOps AI</h1>
+          <h1 className="text-3xl font-semibold text-gray-900">LoyaltyAnalytics AI</h1>
           <p className="text-lg text-gray-500 mt-1">Analytics Dashboard</p>
         </div>
 

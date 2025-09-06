@@ -1,5 +1,5 @@
 """
-remove ronLangGraph ReAct Agent for RewardOps AI Analytics
+LangGraph ReAct Agent for LoyaltyAnalytics
 Uses FastMCP tools for database queries and visualizations.
 """
 
@@ -499,7 +499,7 @@ Always consider the conversation history when responding to maintain context and
 If the user refers to something from earlier, reference the specific messages in the conversation history.
 """
         
-        base_prompt = f"""You are an expert data analyst AI for RewardOps analytics platform.
+        base_prompt = f"""You are an expert data analyst AI for LoyaltyAnalytics platform.
 
 Your role is to help users analyze their e-commerce and redemption data using natural language queries.
 {conversation_context}
