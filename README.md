@@ -339,6 +339,7 @@ For support and questions:
 ## 🙏 Acknowledgments
 
 - [Database Toolbox](https://googleapis.github.io/genai-toolbox/) for multi-database tool integration
+
 - [LLM Sandbox](https://github.com/vndee/llm-sandbox) for secure code execution and agent tool orchestration
 - [MCP-UI Specification](https://github.com/idosal/mcp-ui) for unified tool and UI protocol 
 - [LangGraph](https://github.com/langchain-ai/langgraph) for agent orchestration

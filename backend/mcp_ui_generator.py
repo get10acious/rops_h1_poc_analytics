@@ -66,7 +66,7 @@ class MCPUIGenerator:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
     
-    def create_chart_ui_resource(self, chart_config: Dict[str, Any], title: str = "Chart") -> Dict[str, Any]:
+    def create_chart_ui_resource(self, chart_config: Dict[str, Any], title: str = "Chart", x_axis: str = None, y_axis: str = None) -> Dict[str, Any]:
         """
         Create a chart UI resource from chart configuration.
         
@@ -79,7 +79,7 @@ class MCPUIGenerator:
         """
         try:
             # Create a simple chart HTML
-            chart_html = self._generate_chart_html(chart_config, title)
+            chart_html = self._generate_chart_html(chart_config, title, x_axis, y_axis)
             
             return createUIResource({
                 "uri": f"ui://chart/{datetime.now().timestamp()}",
@@ -121,7 +121,7 @@ class MCPUIGenerator:
             self.logger.error(f"Failed to create table UI resource: {e}")
             return self._create_error_ui_resource(f"Table generation failed: {e}")
     
-    def _generate_chart_html(self, chart_config: Dict[str, Any], title: str) -> str:
+    def _generate_chart_html(self, chart_config: Dict[str, Any], title: str, x_axis: str = None, y_axis: str = None) -> str:
         """Generate HTML for chart visualization."""
         # Simple chart HTML using Chart.js or similar
         chart_id = f"chart_{datetime.now().timestamp()}"
@@ -131,6 +131,13 @@ class MCPUIGenerator:
         
         if not data_points:
             return f"<div><h3>{title}</h3><p>No data available for chart</p></div>"
+        
+        # Fallback to first two keys if x_axis/y_axis not provided
+        if not x_axis or not y_axis:
+            first_row = data_points[0] if data_points else {}
+            keys = list(first_row.keys())
+            x_axis = x_axis or (keys[0] if len(keys) > 0 else 'x')
+            y_axis = y_axis or (keys[1] if len(keys) > 1 else 'y')
         
         # Simple HTML chart
         html = f"""
@@ -148,10 +155,10 @@ class MCPUIGenerator:
                 new Chart(ctx, {{
                     type: 'bar',
                     data: {{
-                        labels: chartData.map(item => Object.keys(item)[0]),
+                        labels: chartData.map(item => item['{x_axis}']),
                         datasets: [{{
                             label: '{title}',
-                            data: chartData.map(item => Object.values(item)[0]),
+                            data: chartData.map(item => item['{y_axis}']),
                             backgroundColor: 'rgba(54, 162, 235, 0.2)',
                             borderColor: 'rgba(54, 162, 235, 1)',
                             borderWidth: 1

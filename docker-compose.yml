@@ -1,14 +1,12 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
     container_name: analytics-postgres
     environment:
-      POSTGRES_DB: analytics_db
-      POSTGRES_USER: analytics
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: loyalty_analytics
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     ports:
       - "5432:5432"

@@ -130,7 +130,7 @@ class DataToChartTool(BaseTool):
                 "y_axis": y_axis
             }
             
-            ui_resource = mcp_ui_generator.create_chart_ui_resource(vizro_config, title)
+            ui_resource = mcp_ui_generator.create_chart_ui_resource(vizro_config, title, x_axis, y_axis)
             
             # Return the complete result
             result = {
@@ -384,7 +384,7 @@ class DataToHistogramTool(BaseTool):
                 "data": safe_data,
                 "x_axis": "bin",
                 "y_axis": "count"
-            }, title)
+            }, title, "bin", "count")
             
             # Return the complete result
             result = {

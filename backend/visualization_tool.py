@@ -61,14 +61,11 @@ class CreateChartTool(BaseTool):
     
     name: str = "create_chart"
     description: str = """
+    DEPRECATED: Use create_chart_from_data instead.
     Create a chart visualization from data and generate a UIResource.
-    This tool takes data and creates an interactive chart with Chart.js.
+    This tool requires pre-fetched data and should NOT be used directly.
     
-    Use this when you have data and want to create:
-    - Bar charts for categorical data
-    - Line charts for time series
-    - Pie charts for proportional data
-    - Histograms for distribution data
+    Use create_chart_from_data for all chart creation needs.
     """
     args_schema: type[BaseModel] = CreateChartInput
     
@@ -119,10 +116,11 @@ class CreateTableTool(BaseTool):
     
     name: str = "create_table"
     description: str = """
+    DEPRECATED: Use create_table_from_data instead.
     Create a data table visualization from data and generate a UIResource.
-    This tool takes data and creates an interactive table with sorting and export capabilities.
+    This tool requires pre-fetched data and should NOT be used directly.
     
-    Use this when you have tabular data and want to display it in a structured format.
+    Use create_table_from_data for all table creation needs.
     """
     args_schema: type[BaseModel] = CreateTableInput
     
@@ -168,10 +166,11 @@ class CreateHistogramTool(BaseTool):
     
     name: str = "create_histogram"
     description: str = """
+    DEPRECATED: Use create_histogram_from_data instead.
     Create a histogram visualization from data and generate a UIResource.
-    This tool takes numerical data and creates a histogram showing the distribution.
+    This tool requires pre-fetched data and should NOT be used directly.
     
-    Use this when you have numerical data and want to show its distribution.
+    Use create_histogram_from_data for all histogram creation needs.
     """
     args_schema: type[BaseModel] = CreateHistogramInput
     

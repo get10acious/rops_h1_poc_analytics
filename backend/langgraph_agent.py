@@ -555,7 +555,10 @@ VISUALIZATION REQUIREMENTS:
   - **create_chart_from_data**: Creates chart from database query + optional code processing
   - **create_table_from_data**: Creates table from database query + optional code processing  
   - **create_histogram_from_data**: Creates histogram from database query + optional code processing
-- **NEVER use the basic create_chart, create_table, or create_histogram tools**
+- **FORBIDDEN: NEVER use these deprecated tools:**
+  - ❌ create_chart (DEPRECATED - requires pre-fetched data)
+  - ❌ create_table (DEPRECATED - requires pre-fetched data)  
+  - ❌ create_histogram (DEPRECATED - requires pre-fetched data)
 - ALWAYS query the database FIRST to get data, THEN create visualizations
 - NEVER provide final response without creating requested visualizations
 - These tools handle the complete workflow: Database Query → Code Processing → UIResource Generation

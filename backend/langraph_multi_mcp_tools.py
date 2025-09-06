@@ -13,7 +13,7 @@ from langchain_core.tools import BaseTool
 from langchain_core.callbacks import CallbackManagerForToolRun
 
 from mcp_multi_client import mcp_manager
-from visualization_tool import get_visualization_tools
+# from visualization_tool import get_visualization_tools  # DISABLED - using composite tools instead
 
 logger = logging.getLogger(__name__)
 
@@ -248,10 +248,10 @@ async def get_all_mcp_langraph_tools() -> List[BaseTool]:
         
         tools = []
         
-        # Add visualization tools
-        visualization_tools = get_visualization_tools()
-        tools.extend(visualization_tools)
-        logger.info(f"✅ Added {len(visualization_tools)} visualization tools")
+        # Add visualization tools (DISABLED - using composite tools instead)
+        # visualization_tools = get_visualization_tools()
+        # tools.extend(visualization_tools)
+        # logger.info(f"✅ Added {len(visualization_tools)} visualization tools")
         
         # Add composite data tools (data + code + UIResource)
         try:
