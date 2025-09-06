@@ -1,60 +1,22 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { AnalyticsChatbot } from '@/components/AnalyticsChatbot'
-import { Header } from '@/components/Header'
-import { Sidebar } from '@/components/Sidebar'
-import { StatusIndicator } from '@/components/StatusIndicator'
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function HomePage() {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirect to admin dashboard
+    router.replace('/admin/dashboard');
+  }, [router]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-      
-      {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      
-      {/* Main Content */}
-      <main className="lg:pl-64">
-        <div className="px-4 py-6 sm:px-6 lg:px-8">
-          {/* Status Indicator */}
-          <div className="mb-6">
-            <StatusIndicator />
-          </div>
-          
-          {/* Page Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">
-              RewardOps Analytics
-            </h1>
-            <p className="mt-2 text-gray-600">
-              Ask questions about your data in natural language and get instant insights
-            </p>
-          </div>
-          
-          {/* Analytics Chatbot */}
-          <div className="card">
-            <div className="card-header">
-              <h2 className="card-title">Analytics Assistant</h2>
-              <p className="card-description">
-                Try asking questions like:
-                <br />
-                • "Show me the top 10 merchants by redemption volume"
-                <br />
-                • "What are the most popular redemption categories?"
-                <br />
-                • "How many users redeemed rewards this month?"
-              </p>
-            </div>
-            <div className="card-content">
-              <AnalyticsChatbot />
-            </div>
-          </div>
-        </div>
-      </main>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-lg text-gray-600">Redirecting to Admin Dashboard...</p>
+      </div>
     </div>
-  )
+  );
 }

@@ -1,0 +1,32 @@
+{
+  "ui_components": {
+    "default_chart_types": ["bar", "line", "pie", "scatter", "area"],
+    "default_colors": ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#84cc16", "#f97316"],
+    "chart_options": {
+      "responsive": true,
+      "maintainAspectRatio": false,
+      "animation": {
+        "duration": 1000
+      }
+    },
+    "table_options": {
+      "sortable": true,
+      "searchable": true,
+      "exportable": true,
+      "pagination": true
+    },
+    "form_validation": {
+      "enabled": true,
+      "highlight_errors": true
+    }
+  },
+  "themes": {
+    "default": {
+      "primary_color": "#3b82f6",
+      "secondary_color": "#10b981",
+      "background_color": "#f8fafc",
+      "text_color": "#374151",
+      "border_color": "#e5e7eb"
+    }
+  }
+}

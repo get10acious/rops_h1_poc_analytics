@@ -1,11 +1,11 @@
-# AI Assistant Guide for RewardOps Analytics POC
+# AI Assistant Guide for MCP UI Chat Analytics POC
 
-This guide provides comprehensive instructions for AI coding assistants to help students build the RewardOps Natural Language Analytics POC. Follow these patterns and rules to ensure consistent, high-quality development.
+This guide provides comprehensive instructions for AI coding assistants to help students build the MCP UI Chat Natural Language Analytics POC. Follow these patterns and rules to ensure consistent, high-quality development.
 
 ## 🎯 System Overview
 
 ### Business Context
-- **Company**: RewardOps - A rewards and loyalty platform
+- **Company**: Analytics Platform - A data analytics platform
 - **Domain**: Merchant rewards, user redemptions, campaign management
 - **Goal**: Transform static admin homepage into intelligent analytics dashboard
 - **Users**: Non-technical business users who need data insights
@@ -13,7 +13,7 @@ This guide provides comprehensive instructions for AI coding assistants to help 
 ### Technical Architecture
 - **Backend**: FastAPI with WebSocket support
 - **Frontend**: React/Next.js with real-time chat interface
-- **Database**: PostgreSQL with sample RewardOps data
+- **Database**: PostgreSQL with sample analytics data
 - **AI Agent**: LangGraph-based ReAct agent
 - **MCP Integration**: Database Toolbox + Vizro MCP servers
 - **Communication**: WebSocket for real-time chat
@@ -88,10 +88,10 @@ const AnalyticsChatbot: React.FC<AnalyticsChatbotProps> = ({
 Always start with comprehensive context:
 
 ```
-@agent We are building a RewardOps analytics POC. Here's the context:
+@agent We are building an analytics POC. Here's the context:
 
 BUSINESS DOMAIN:
-- RewardOps is a loyalty platform with merchants, users, and redemptions
+- This is an analytics platform with merchants, users, and transactions
 - Business users need to query data like "top merchants by redemption volume"
 - System should generate interactive charts and dashboards
 

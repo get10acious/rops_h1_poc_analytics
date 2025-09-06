@@ -1,5 +1,5 @@
 """
-WebSocket connection manager for RewardOps Analytics POC.
+WebSocket connection manager for MCP UI Chat Analytics POC.
 
 This module handles WebSocket connections, message broadcasting, and connection
 lifecycle management.
@@ -9,7 +9,7 @@ import asyncio
 import json
 import logging
 from typing import Dict, List, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import WebSocket
 from collections import defaultdict
 
@@ -32,8 +32,8 @@ class WebSocketManager:
         # Rate limiting per connection
         self.rate_limits: Dict[WebSocket, Dict[str, Any]] = defaultdict(lambda: {
             "requests": 0,
-            "window_start": datetime.utcnow(),
-            "last_request": datetime.utcnow()
+            "window_start": datetime.now(timezone.utc),
+            "last_request": datetime.now(timezone.utc)
         })
     
     async def connect(self, websocket: WebSocket) -> None:
@@ -43,8 +43,8 @@ class WebSocketManager:
             
             # Store connection info
             connection_info = {
-                "connected_at": datetime.utcnow(),
-                "last_activity": datetime.utcnow(),
+                "connected_at": datetime.now(timezone.utc),
+                "last_activity": datetime.now(timezone.utc),
                 "user_id": None,
                 "message_count": 0
             }
@@ -63,7 +63,7 @@ class WebSocketManager:
         """Remove a WebSocket connection."""
         if websocket in self.active_connections:
             connection_info = self.active_connections[websocket]
-            duration = datetime.utcnow() - connection_info["connected_at"]
+            duration = datetime.now(timezone.utc) - connection_info["connected_at"]
             
             logger.info(f"WebSocket disconnected: {websocket.client}. Duration: {duration}")
             
@@ -81,13 +81,13 @@ class WebSocketManager:
                 await websocket.send_text(json.dumps(message))
                 
                 # Update connection info
-                self.active_connections[websocket]["last_activity"] = datetime.utcnow()
+                self.active_connections[websocket]["last_activity"] = datetime.now(timezone.utc)
                 self.active_connections[websocket]["message_count"] += 1
                 self.stats["total_messages"] += 1
                 
                 # Add to message history (keep last 100 messages)
                 self.message_history.append({
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                     "type": message.get("type", "unknown"),
                     "client": str(websocket.client),
                     "message_id": message.get("message_id", "unknown")
@@ -119,7 +119,7 @@ class WebSocketManager:
             
             try:
                 await websocket.send_text(json.dumps(message))
-                self.active_connections[websocket]["last_activity"] = datetime.utcnow()
+                self.active_connections[websocket]["last_activity"] = datetime.now(timezone.utc)
                 self.stats["total_messages"] += 1
                 
             except Exception as e:
@@ -140,7 +140,7 @@ class WebSocketManager:
             if connection_info.get("user_id") == user_id:
                 try:
                     await websocket.send_text(json.dumps(message))
-                    connection_info["last_activity"] = datetime.utcnow()
+                    connection_info["last_activity"] = datetime.now(timezone.utc)
                     sent_count += 1
                 except Exception as e:
                     logger.error(f"Error sending message to user {user_id}: {e}")
@@ -184,7 +184,7 @@ class WebSocketManager:
         if websocket not in self.rate_limits:
             return True
         
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         rate_limit_info = self.rate_limits[websocket]
         
         # Reset window if needed
@@ -211,7 +211,7 @@ class WebSocketManager:
     
     async def cleanup_stale_connections(self, timeout_seconds: int = 3600) -> None:
         """Remove stale connections that haven't been active for a while."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         stale_connections = []
         
         for websocket, connection_info in self.active_connections.items():
@@ -233,9 +233,9 @@ class WebSocketManager:
                 # Send ping to all connections
                 ping_message = {
                     "type": "PING",
-                    "payload": {"timestamp": datetime.utcnow().isoformat()},
-                    "timestamp": datetime.utcnow().isoformat(),
-                    "message_id": f"ping_{datetime.utcnow().timestamp()}"
+                    "payload": {"timestamp": datetime.now(timezone.utc).isoformat()},
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "message_id": f"ping_{datetime.now(timezone.utc).timestamp()}"
                 }
                 
                 await self.broadcast_message(ping_message)

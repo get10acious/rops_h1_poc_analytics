@@ -1,6 +1,6 @@
 # Development Patterns and Standards
 
-This document defines the coding patterns, architectural principles, and development standards for the RewardOps Analytics POC project.
+This document defines the coding patterns, architectural principles, and development standards for the MCP UI Chat Analytics POC project.
 
 ## 🏗️ Architectural Principles
 
@@ -809,7 +809,7 @@ class Config:
       "command": "npx",
       "args": ["@modelcontextprotocol/server-postgres"],
       "env": {
-        "POSTGRES_CONNECTION_STRING": "postgresql://rewardops:password@localhost:5432/rewardops_db"
+        "POSTGRES_CONNECTION_STRING": "postgresql://analytics:password@localhost:5432/analytics_db"
       }
     },
     "vizro": {

@@ -1,13 +1,13 @@
-# RewardOps AI Fluency Hackathon Challenge Brief
+# MCP UI Chat Analytics Hackathon Challenge Brief
 
 ## 🎯 Mission Statement
 
-Transform the RewardOps admin homepage from a static welcome screen into a dynamic, intelligent "mission control" for business analytics. Build a high-fidelity, working Proof of Concept (POC) that allows non-technical users to ask plain English questions and receive interactive data visualizations in real-time.
+Transform an admin homepage from a static welcome screen into a dynamic, intelligent "mission control" for business analytics. Build a high-fidelity, working Proof of Concept (POC) that allows non-technical users to ask plain English questions and receive interactive data visualizations in real-time.
 
 ## 📋 Challenge Overview
 
 ### Business Context
-- **Company**: RewardOps - A loyalty and rewards platform
+- **Company**: Analytics Platform - A data analytics platform
 - **Current State**: Static admin homepage, business team bottlenecked by engineering dependencies
 - **Vision**: Real-time, self-service analytics for business users
 - **Timeline**: One-day hackathon implementation
@@ -283,9 +283,9 @@ make start
 ### Sample Prompts for AI Assistants
 ```markdown
 # Context Setting Prompt
-@agent We are building a RewardOps analytics POC. Here's the context:
+@agent We are building an analytics POC. Here's the context:
 
-BUSINESS DOMAIN: RewardOps loyalty platform with merchants, users, redemptions
+BUSINESS DOMAIN: Analytics platform with merchants, users, transactions
 TECHNICAL STACK: FastAPI + WebSocket + LangGraph + MCP + React
 CURRENT STATE: [Describe what's implemented]
 NEXT TASK: [Describe what needs to be built]

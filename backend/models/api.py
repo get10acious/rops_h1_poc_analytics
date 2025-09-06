@@ -1,5 +1,5 @@
 """
-API models and data structures for RewardOps Analytics POC.
+API models and data structures for MCP UI Chat Analytics POC.
 
 This module defines all the Pydantic models used for API requests, responses,
 and WebSocket communication.
@@ -8,11 +8,12 @@ and WebSocket communication.
 from typing import Dict, Any, Optional, List, Union
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 class MessageType(str, Enum):
     """WebSocket message types."""
     QUERY = "QUERY"
+    USER_QUERY = "user_query"  # Frontend compatibility
     RESPONSE = "RESPONSE"
     ERROR = "ERROR"
     STATUS_UPDATE = "STATUS_UPDATE"
@@ -39,9 +40,10 @@ class ChartType(str, Enum):
 class WebSocketMessage(BaseModel):
     """Base WebSocket message structure."""
     type: MessageType
-    payload: Dict[str, Any]
-    timestamp: str
-    message_id: str
+    payload: Optional[Dict[str, Any]] = None
+    content: Optional[Dict[str, Any]] = None
+    timestamp: Optional[str] = None
+    message_id: Optional[str] = None
 
 # Specific Message Types
 class QueryMessage(WebSocketMessage):
@@ -80,7 +82,7 @@ class Merchant(BaseModel):
 class User(BaseModel):
     """User data model."""
     id: int
-    email: str = Field(..., regex=r'^[^@]+@[^@]+\.[^@]+$')
+    email: str = Field(..., pattern=r'^[^@]+@[^@]+\.[^@]+$')
     first_name: Optional[str] = Field(None, max_length=100)
     last_name: Optional[str] = Field(None, max_length=100)
     phone: Optional[str] = Field(None, max_length=20)
@@ -89,7 +91,7 @@ class User(BaseModel):
     updated_at: datetime
     is_active: bool = True
     total_points: int = Field(0, ge=0)
-    tier: str = Field("bronze", regex=r'^(bronze|silver|gold|platinum)$')
+    tier: str = Field("bronze", pattern=r'^(bronze|silver|gold|platinum)$')
 
 class Redemption(BaseModel):
     """Redemption data model."""
@@ -99,7 +101,7 @@ class Redemption(BaseModel):
     amount: float = Field(..., gt=0)
     points_used: int = Field(..., gt=0)
     redemption_date: datetime
-    status: str = Field(..., regex=r'^(completed|pending|cancelled)$')
+    status: str = Field(..., pattern=r'^(completed|pending|cancelled)$')
     transaction_id: Optional[str] = None
     notes: Optional[str] = None
     created_at: datetime
@@ -121,7 +123,8 @@ class AnalyticsQuery(BaseModel):
     user_id: str = Field(..., min_length=1, max_length=100)
     context: Optional[Dict[str, Any]] = None
     
-    @validator('query')
+    @field_validator('query')
+    @classmethod
     def validate_query(cls, v):
         if not v.strip():
             raise ValueError('Query cannot be empty')
@@ -129,7 +132,7 @@ class AnalyticsQuery(BaseModel):
 
 class AnalyticsResult(BaseModel):
     """Analytics query result model."""
-    status: str = Field(..., regex=r'^(success|error)$')
+    status: str = Field(..., pattern=r'^(success|error)$')
     data: List[Dict[str, Any]] = Field(default_factory=list)
     visualization: Optional[Dict[str, Any]] = None
     query: str
@@ -142,14 +145,15 @@ class VizroConfig(BaseModel):
     """Vizro visualization configuration."""
     title: str = Field(..., min_length=1, max_length=255)
     chart_type: ChartType = ChartType.BAR
-    data: List[Dict[str, Any]] = Field(..., min_items=1)
+    data: List[Dict[str, Any]] = Field(..., min_length=1)
     x_column: Optional[str] = None
     y_column: Optional[str] = None
     width: int = Field(800, ge=200, le=2000)
     height: int = Field(600, ge=200, le=2000)
-    theme: str = Field("default", regex=r'^(default|dark|light)$')
+    theme: str = Field("default", pattern=r'^(default|dark|light)$')
     
-    @validator('data')
+    @field_validator('data')
+    @classmethod
     def validate_data(cls, v):
         if not v:
             raise ValueError('Data cannot be empty')
@@ -254,7 +258,7 @@ class AgentState(BaseModel):
 
 class AgentStep(BaseModel):
     """Single agent step."""
-    step_type: str = Field(..., regex=r'^(reason|act|observe)$')
+    step_type: str = Field(..., pattern=r'^(reason|act|observe)$')
     content: str
     timestamp: datetime
     step_number: int
@@ -316,7 +320,7 @@ __all__ = [
     "Campaign",
     "AnalyticsQuery",
     "AnalyticsResult",
-    "VizroConfig",
+    "UIConfig",
     "UIResource",
     "HealthCheckResponse",
     "StatusResponse",

@@ -1,16 +1,18 @@
 {
-  "name": "RewardOps Analytics POC Template",
-  "description": "GitHub template repository for building natural language analytics systems with MCP integration",
+  "name": "MCP UI Chat Analytics Template",
+  "description": "GitHub template repository for building MCP UI chat analytics systems with natural language processing",
   "version": "1.0.0",
   "author": "get10acious",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/get10acious/rewardops-analytics-poc-template.git"
+    "url": "https://github.com/get10acious/mcpui-chat-analytics-template.git"
   },
   "keywords": [
-    "analytics",
     "mcp",
+    "ui",
+    "chat",
+    "analytics",
     "fastapi",
     "react",
     "postgresql",

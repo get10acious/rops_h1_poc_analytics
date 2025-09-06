@@ -4,97 +4,122 @@ Configuration management for RewardOps Analytics POC.
 This module handles all configuration settings including environment variables,
 database connections, MCP server configurations, and application settings.
 """
-
 import os
 from pathlib import Path
 from typing import Optional, List
-from pydantic import BaseSettings, Field, validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, field_validator
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class Settings(BaseSettings):
     """Application settings with environment variable support."""
     
     # Base configuration
-    DEBUG: bool = Field(False, env="DEBUG")
-    LOG_LEVEL: str = Field("INFO", env="LOG_LEVEL")
-    BASE_DIR: Path = Path(__file__).parent.parent
+    debug: bool = Field(False, description="Debug mode flag")
+    log_level: str = Field("INFO", description="Logging level")
+    base_dir: Path = Path(__file__).parent.parent
     
-    # Database configuration
-    DATABASE_URL: str = Field(..., env="DATABASE_URL")
-    REDIS_URL: str = Field("redis://localhost:6379", env="REDIS_URL")
+    # Database configuration - Individual components for flexibility
+    postgres_host: str = Field("localhost", description="PostgreSQL host")
+    postgres_port: int = Field(5432, description="PostgreSQL port")
+    postgres_database: str = Field("rewardops", description="PostgreSQL database name")
+    postgres_user: str = Field("postgres", description="PostgreSQL username")
+    postgres_password: str = Field("postgres", description="PostgreSQL password")
+    
+    # Computed database URL
+    @property
+    def database_url(self) -> str:
+        """Build database URL from components."""
+        return f"postgresql://{self.postgres_user}:{self.postgres_password}@{self.postgres_host}:{self.postgres_port}/{self.postgres_database}"
+    
+    # Redis configuration  
+    redis_url: str = Field("redis://localhost:6379", description="Redis connection URL")
     
     # API Keys
-    OPENAI_API_KEY: Optional[str] = Field(None, env="OPENAI_API_KEY")
-    GEMINI_API_KEY: Optional[str] = Field(None, env="GEMINI_API_KEY")
+    openai_api_key: Optional[str] = Field(None, description="OpenAI API key for LLM")
+    gemini_api_key: Optional[str] = Field(None, description="Google Gemini API key for LLM")
     
     # MCP Server configuration
-    MCP_DATABASE_CONFIG: str = Field("mcp_servers/database_config.json", env="MCP_DATABASE_CONFIG")
-    MCP_VIZRO_CONFIG: str = Field("mcp_servers/vizro_config.json", env="MCP_VIZRO_CONFIG")
+    mcp_database_config: str = Field("mcp_servers/mcp_config.json", description="MCP database server config file path")
+    mcp_ui_config: str = Field("mcp_servers/ui_config.json", description="MCP UI server config file path")
     
     # WebSocket configuration
-    WS_HEARTBEAT_INTERVAL: int = Field(30, env="WS_HEARTBEAT_INTERVAL")
-    WS_MAX_CONNECTIONS: int = Field(100, env="WS_MAX_CONNECTIONS")
+    ws_heartbeat_interval: int = Field(30, description="WebSocket heartbeat interval in seconds")
+    ws_max_connections: int = Field(100, description="Maximum WebSocket connections")
     
     # Application configuration
-    APP_NAME: str = Field("RewardOps Analytics POC", env="APP_NAME")
-    APP_VERSION: str = Field("1.0.0", env="APP_VERSION")
+    app_name: str = Field("RewardOps Analytics", description="Application name")
+    app_version: str = Field("1.0.0", description="Application version")
+    
+    # FastAPI Configuration
+    host: str = Field("0.0.0.0", description="FastAPI host")
+    port: int = Field(8000, description="FastAPI port")
     
     # CORS configuration
-    CORS_ORIGINS: List[str] = Field(
-        ["http://localhost:3000", "http://127.0.0.1:3000"], 
-        env="CORS_ORIGINS"
+    cors_origins_str: str = Field(
+        "http://localhost:3000,http://127.0.0.1:3000", 
+        description="Allowed CORS origins (comma-separated)"
     )
     
+    @property
+    def cors_origins(self) -> List[str]:
+        """Parse CORS origins from comma-separated string."""
+        return [origin.strip() for origin in self.cors_origins_str.split(',')]
+    
     # Rate limiting
-    RATE_LIMIT_REQUESTS: int = Field(100, env="RATE_LIMIT_REQUESTS")
-    RATE_LIMIT_WINDOW: int = Field(3600, env="RATE_LIMIT_WINDOW")  # seconds
+    rate_limit_requests: int = Field(100, description="Rate limit requests per window")
+    rate_limit_window: int = Field(3600, description="Rate limit window in seconds")
     
     # Query processing
-    MAX_QUERY_LENGTH: int = Field(1000, env="MAX_QUERY_LENGTH")
-    QUERY_TIMEOUT: int = Field(30, env="QUERY_TIMEOUT")  # seconds
+    max_query_length: int = Field(1000, description="Maximum query length")
+    query_timeout: int = Field(30, description="Query timeout in seconds")
     
     # Visualization
-    DEFAULT_CHART_TYPE: str = Field("bar", env="DEFAULT_CHART_TYPE")
-    MAX_DATA_POINTS: int = Field(1000, env="MAX_DATA_POINTS")
+    default_chart_type: str = Field("bar", description="Default chart type")
+    max_data_points: int = Field(1000, description="Maximum data points for visualization")
     
-    @validator('LOG_LEVEL')
+    @field_validator('log_level')
+    @classmethod
     def validate_log_level(cls, v):
         valid_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
         if v.upper() not in valid_levels:
-            raise ValueError(f'LOG_LEVEL must be one of {valid_levels}')
+            raise ValueError(f'log_level must be one of {valid_levels}')
         return v.upper()
     
-    @validator('CORS_ORIGINS', pre=True)
-    def parse_cors_origins(cls, v):
-        if isinstance(v, str):
-            return [origin.strip() for origin in v.split(',')]
-        return v
-    
-    @validator('DATABASE_URL')
-    def validate_database_url(cls, v):
-        if not v.startswith(('postgresql://', 'postgres://')):
-            raise ValueError('DATABASE_URL must be a PostgreSQL connection string')
-        return v
-    
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
+    model_config = SettingsConfigDict(
+        env_file=".env", 
+        env_file_encoding='utf-8',
+        case_sensitive=False,
+        extra='ignore',
+        env_parse_none_str='',
+        env_parse_enums=True
+    )
 
 # Global settings instance
 settings = Settings()
 
+# Debug: Print configuration loading status
+print(f"🔧 Configuration loaded:")
+print(f"  - OpenAI API Key: {'✅ Set' if settings.openai_api_key else '❌ Not set'}")
+print(f"  - Database URL: {settings.database_url}")
+print(f"  - Debug mode: {settings.debug}")
+print(f"  - Environment file loading complete")
+
 # Database configuration
 DATABASE_CONFIG = {
-    "url": settings.DATABASE_URL,
+    "url": settings.database_url,
     "pool_size": 20,
     "max_overflow": 30,
     "pool_pre_ping": True,
     "pool_recycle": 3600,
-    "echo": settings.DEBUG
+    "echo": settings.debug
 }
 
 # Redis configuration
 REDIS_CONFIG = {
-    "url": settings.REDIS_URL,
+    "url": settings.redis_url,
     "max_connections": 20,
     "retry_on_timeout": True,
     "decode_responses": True
@@ -103,14 +128,14 @@ REDIS_CONFIG = {
 # MCP Server configurations
 MCP_CONFIGS = {
     "database": {
-        "config_path": settings.MCP_DATABASE_CONFIG,
+        "config_path": settings.mcp_database_config,
         "server_name": "database",
-        "tools": ["db-toolbox:query", "db-toolbox:get_schema", "db-toolbox:list_tables"]
+        "tools": ["postgres:query", "postgres:get_schema", "postgres:list_tables"]
     },
-    "vizro": {
-        "config_path": settings.MCP_VIZRO_CONFIG,
-        "server_name": "vizro",
-        "tools": ["vizro-mcp:create_dashboard", "vizro-mcp:create_chart", "vizro-mcp:get_chart_types"]
+    "ui": {
+        "config_path": settings.mcp_ui_config,
+        "server_name": "ui",
+        "tools": ["ui:create_chart", "ui:create_table", "ui:create_dashboard", "ui:create_form"]
     }
 }
 
@@ -129,13 +154,13 @@ LOGGING_CONFIG = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "level": settings.LOG_LEVEL,
+            "level": settings.log_level,
             "formatter": "default",
             "stream": "ext://sys.stdout",
         },
         "file": {
             "class": "logging.FileHandler",
-            "level": settings.LOG_LEVEL,
+            "level": settings.log_level,
             "formatter": "detailed",
             "filename": "app.log",
             "mode": "a",
@@ -143,7 +168,7 @@ LOGGING_CONFIG = {
     },
     "loggers": {
         "": {
-            "level": settings.LOG_LEVEL,
+            "level": settings.log_level,
             "handlers": ["console", "file"],
             "propagate": False,
         },
@@ -162,7 +187,7 @@ LOGGING_CONFIG = {
 
 # Business domain configuration
 BUSINESS_CONFIG = {
-    "company_name": "RewardOps",
+    "company_name": "Analytics",
     "domain": "loyalty_and_rewards",
     "sample_queries": [
         "Show me the top 10 merchants by redemption volume",
@@ -201,11 +226,11 @@ SUCCESS_MESSAGES = {
 
 def get_database_url() -> str:
     """Get the database URL from settings."""
-    return settings.DATABASE_URL
+    return settings.database_url
 
 def get_redis_url() -> str:
     """Get the Redis URL from settings."""
-    return settings.REDIS_URL
+    return settings.redis_url
 
 def get_mcp_config(server_name: str) -> dict:
     """Get MCP configuration for a specific server."""
@@ -213,11 +238,11 @@ def get_mcp_config(server_name: str) -> dict:
 
 def is_debug_mode() -> bool:
     """Check if debug mode is enabled."""
-    return settings.DEBUG
+    return settings.debug
 
 def get_log_level() -> str:
     """Get the current log level."""
-    return settings.LOG_LEVEL
+    return settings.log_level
 
 def validate_configuration() -> bool:
     """
@@ -228,15 +253,21 @@ def validate_configuration() -> bool:
     """
     try:
         # Validate required settings
-        if not settings.DATABASE_URL:
-            raise ValueError("DATABASE_URL is required")
+        if not settings.database_url:
+            raise ValueError("database_url is required")
         
-        # Validate file paths
-        if not Path(settings.MCP_DATABASE_CONFIG).exists():
-            raise ValueError(f"MCP database config file not found: {settings.MCP_DATABASE_CONFIG}")
+        # Validate file paths (create if missing)
+        db_config_path = Path(settings.mcp_database_config)
+        if not db_config_path.exists():
+            print(f"Warning: MCP database config file not found: {settings.mcp_database_config}")
+            # Create directory if it doesn't exist
+            db_config_path.parent.mkdir(parents=True, exist_ok=True)
         
-        if not Path(settings.MCP_VIZRO_CONFIG).exists():
-            raise ValueError(f"MCP Vizro config file not found: {settings.MCP_VIZRO_CONFIG}")
+        ui_config_path = Path(settings.mcp_ui_config)
+        if not ui_config_path.exists():
+            print(f"Warning: MCP UI config file not found: {settings.mcp_ui_config}")
+            # Create directory if it doesn't exist
+            ui_config_path.parent.mkdir(parents=True, exist_ok=True)
         
         return True
     except Exception as e:

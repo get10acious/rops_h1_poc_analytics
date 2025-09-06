@@ -1,6 +1,6 @@
 # Template Management Guide
 
-This document provides instructions for managing the RewardOps Analytics POC Template repository.
+This document provides instructions for managing the MCP UI Chat Analytics Template repository.
 
 ## Overview
 
@@ -59,7 +59,7 @@ make -f Makefile.github clean-template
    ```bash
    git init
    git add .
-   git commit -m "Initial commit: RewardOps Analytics POC Template"
+   git commit -m "Initial commit: MCP UI Chat Analytics Template"
    ```
 
 2. **Set Up Template:**
@@ -89,7 +89,7 @@ The template includes:
 - **Documentation**: Comprehensive guides for AI assistants and students
 - **Backend**: FastAPI boilerplate with WebSocket and MCP integration
 - **Frontend**: React/TypeScript boilerplate with Tailwind CSS
-- **Database**: PostgreSQL setup with sample RewardOps data
+- **Database**: PostgreSQL setup with sample analytics data
 - **Docker**: Containerization for all services
 - **GitHub**: Workflows, issue templates, and PR templates
 - **Development**: Makefiles for easy development workflow
@@ -128,9 +128,9 @@ Students will:
 
 ## Repository Information
 
-- **Template Repository**: https://github.com/get10acious/rewardops-analytics-poc-template
+- **Template Repository**: https://github.com/get10acious/mcpui-chat-analytics-template
 - **Organization**: get10acious
-- **Template Name**: rewardops-analytics-poc-template
+- **Template Name**: mcpui-chat-analytics-template
 - **Description**: GitHub template repository for building natural language analytics systems with MCP integration
 
 ## Troubleshooting

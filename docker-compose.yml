@@ -4,10 +4,10 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: rewardops-postgres
+    container_name: analytics-postgres
     environment:
-      POSTGRES_DB: rewardops_db
-      POSTGRES_USER: rewardops
+      POSTGRES_DB: analytics_db
+      POSTGRES_USER: analytics
       POSTGRES_PASSWORD: password
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     ports:
@@ -16,9 +16,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/01-init_db.sql
     networks:
-      - rewardops-network
+      - analytics-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rewardops -d rewardops_db"]
+      test: ["CMD-SHELL", "pg_isready -U analytics -d analytics_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,13 +27,13 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: rewardops-redis
+    container_name: analytics-redis
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
-      - rewardops-network
+      - analytics-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -47,9 +47,9 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: rewardops-backend
+    container_name: analytics-backend
     environment:
-      - DATABASE_URL=postgresql://rewardops:password@postgres:5432/rewardops_db
+      - DATABASE_URL=postgresql://analytics:password@postgres:5432/analytics_db
       - REDIS_URL=redis://redis:6379
       - LOG_LEVEL=INFO
       - DEBUG=false
@@ -61,7 +61,7 @@ services:
       - ./backend:/app
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - rewardops-network
+      - analytics-network
     depends_on:
       postgres:
         condition: service_healthy
@@ -79,7 +79,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: rewardops-frontend
+    container_name: analytics-frontend
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
       - NEXT_PUBLIC_WS_URL=ws://localhost:8000
@@ -89,7 +89,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     networks:
-      - rewardops-network
+      - analytics-network
     depends_on:
       - backend
     restart: unless-stopped
@@ -97,7 +97,7 @@ services:
   # MCP Database Toolbox Server
   mcp-database:
     image: node:18-alpine
-    container_name: rewardops-mcp-database
+    container_name: analytics-mcp-database
     working_dir: /app
     command: >
       sh -c "
@@ -105,9 +105,9 @@ services:
         npx @modelcontextprotocol/server-postgres
       "
     environment:
-      - POSTGRES_CONNECTION_STRING=postgresql://rewardops:password@postgres:5432/rewardops_db
+      - POSTGRES_CONNECTION_STRING=postgresql://analytics:password@postgres:5432/analytics_db
     networks:
-      - rewardops-network
+      - analytics-network
     depends_on:
       postgres:
         condition: service_healthy
@@ -116,7 +116,7 @@ services:
   # MCP Vizro Server
   mcp-vizro:
     image: node:18-alpine
-    container_name: rewardops-mcp-vizro
+    container_name: analytics-mcp-vizro
     working_dir: /app
     command: >
       sh -c "
@@ -128,7 +128,7 @@ services:
     volumes:
       - ./backend/mcp_servers/vizro_config.json:/app/vizro_config.json
     networks:
-      - rewardops-network
+      - analytics-network
     restart: unless-stopped
 
 volumes:
@@ -138,7 +138,7 @@ volumes:
     driver: local
 
 networks:
-  rewardops-network:
+  analytics-network:
     driver: bridge
     ipam:
       config:

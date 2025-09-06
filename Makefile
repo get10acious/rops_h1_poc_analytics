@@ -1,4 +1,4 @@
-# RewardOps AI Fluency - Makefile for project management
+# MCP UI Chat Analytics - Makefile for project management
 
 .PHONY: help install install_uv run setup-backend setup-frontend setup-mcp init-db start-backend start-frontend start dev clean test
 
@@ -17,8 +17,10 @@ NOTEBOOKS_DIR := backend/notebooks
 
 COMMAND ?= "--version"
 
+DOCKER_COMPOSE := $(shell command -v docker-compose 2> /dev/null || echo "docker compose")
+
 help: ## Show this help message
-	@echo "$(CYAN)RewardOps AI Fluency - Available Commands:$(RESET)"
+	@echo "$(CYAN)MCP UI Chat Analytics - Available Commands:$(RESET)"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(GREEN)%-20s$(RESET) %s\n", $$1, $$2}'
 
@@ -49,11 +51,16 @@ setup-backend: ## Setup Python virtual environment and install backend dependenc
 	cd backend && $(UV) venv $(VENV_NAME) --python $(PYTHON)
 	cd backend && . $(VENV_NAME)/bin/activate && $(UV) pip install --upgrade pip
 	cd backend && . $(VENV_NAME)/bin/activate && $(UV) pip install -r requirements.txt
+	@if [ ! -f backend/.env ]; then \
+		echo "$(YELLOW)>>> Creating .env file from template...$(RESET)"; \
+		cp backend/env_template.txt backend/.env; \
+		echo "$(GREEN)>>> .env file created. Please update with your actual values.$(RESET)"; \
+	fi
 	@echo "$(GREEN)Backend setup complete!$(RESET)"
 
 setup-mcp: ## Setup MCP servers (PostgreSQL Toolbox and Vizro)
 	@echo "$(CYAN)Setting up MCP servers...$(RESET)"
-	cd backend && . $(VENV_NAME)/bin/activate && python -c "import asyncio; from mcp_multi_client import mcp_manager; asyncio.run(mcp_manager.initialize())"
+	cd backend && . $(VENV_NAME)/bin/activate && python mcp_setup.py
 	@echo "$(GREEN)MCP setup complete!$(RESET)"
 
 setup-frontend: ## Setup Node.js dependencies for frontend
@@ -64,11 +71,12 @@ setup-frontend: ## Setup Node.js dependencies for frontend
 
 init-db: ## Initialize database with sample data
 	@echo "$(CYAN)Initializing database...$(RESET)"
-	@if ! docker ps | grep rewardops-postgres >/dev/null; then \
+	@if ! docker ps | grep analytics-postgres >/dev/null; then \
 		echo "$(YELLOW)>>> Starting PostgreSQL container...$(RESET)"; \
-		docker-compose up -d postgres; \
+		$(DOCKER_COMPOSE) up -d postgres; \
 		sleep 10; \
 	fi
+	cd backend && . $(VENV_NAME)/bin/activate && python init_db.py
 	@echo "$(GREEN)Database initialized successfully!$(RESET)"
 
 start-backend: ## Start the FastAPI backend server
@@ -131,26 +139,26 @@ logs-backend: ## Show backend server logs
 
 status: ## Show status of all services
 	@echo "$(CYAN)Service Status:$(RESET)"
-	@echo "$(YELLOW)PostgreSQL:$(RESET) $(shell docker ps | grep rewardops-postgres >/dev/null && echo '$(GREEN)Running$(RESET)' || echo '$(RED)Not Running$(RESET)')"
+	@echo "$(YELLOW)PostgreSQL:$(RESET) $(shell docker ps | grep analytics-postgres >/dev/null && echo '$(GREEN)Running$(RESET)' || echo '$(RED)Not Running$(RESET)')"
 	@echo "$(YELLOW)Backend:$(RESET) $(shell lsof -ti:8000 >/dev/null && echo '$(GREEN)Running$(RESET)' || echo '$(RED)Not Running$(RESET)')"
 	@echo "$(YELLOW)Frontend:$(RESET) $(shell lsof -ti:3000 >/dev/null && echo '$(GREEN)Running$(RESET)' || echo '$(RED)Not Running$(RESET)')"
 
 docker-up: ## Start PostgreSQL database in Docker
 	@echo "$(CYAN)Starting PostgreSQL database...$(RESET)"
-	docker-compose up -d postgres
+	@$(DOCKER_COMPOSE) up -d postgres
 	@echo "$(GREEN)Database started!$(RESET)"
 
 docker-down: ## Stop PostgreSQL database
 	@echo "$(CYAN)Stopping PostgreSQL database...$(RESET)"
-	docker-compose down
+	@$(DOCKER_COMPOSE) down
 	@echo "$(GREEN)Database stopped!$(RESET)"
 
 docker-logs: ## Show PostgreSQL database logs
-	docker-compose logs -f postgres
+	@$(DOCKER_COMPOSE) logs -f postgres
 
 docker-full: ## Start all services with Docker Compose
 	@echo "$(CYAN)Starting all services with Docker Compose...$(RESET)"
-	docker-compose up -d
+	@$(DOCKER_COMPOSE) up -d
 	@echo "$(GREEN)All services started!$(RESET)"
 	@echo "$(YELLOW)Backend: http://localhost:8000$(RESET)"
 	@echo "$(YELLOW)Frontend: http://localhost:3000$(RESET)"
@@ -163,22 +171,22 @@ docker-full: ## Start all services with Docker Compose
 .PHONY: jupyter
 jupyter: ## Start Jupyter Notebook
 	@echo "$(CYAN)>>> Starting Jupyter Notebook...$(RESET)"
-	@echo "$(YELLOW)>>> Make sure to select 'rewardops-analytics' kernel in your notebooks$(RESET)"
+	@echo "$(YELLOW)>>> Make sure to select 'analytics' kernel in your notebooks$(RESET)"
 	cd backend && . $(VENV_NAME)/bin/activate && jupyter notebook --notebook-dir=$(NOTEBOOKS_DIR)
 
 # Start Jupyter Lab
 .PHONY: jupyter-lab
 jupyter-lab: ## Start Jupyter Lab
 	@echo "$(CYAN)>>> Starting Jupyter Lab...$(RESET)"
-	@echo "$(YELLOW)>>> Make sure to select 'rewardops-analytics' kernel in your notebooks$(RESET)"
+	@echo "$(YELLOW)>>> Make sure to select 'analytics' kernel in your notebooks$(RESET)"
 	cd backend && . $(VENV_NAME)/bin/activate && jupyter lab --notebook-dir=$(NOTEBOOKS_DIR)
 
 # Install Jupyter kernel for this environment
 .PHONY: install-kernel
 install-kernel: ## Install Jupyter kernel for this environment
-	@echo "$(CYAN)>>> Installing Jupyter kernel for rewardops-analytics environment...$(RESET)"
+	@echo "$(CYAN)>>> Installing Jupyter kernel for analytics environment...$(RESET)"
 	cd backend && . $(VENV_NAME)/bin/activate && $(UV) pip install ipykernel
-	cd backend && . $(VENV_NAME)/bin/activate && python -m ipykernel install --user --name=rewardops-analytics --display-name="RewardOps Analytics"
+	cd backend && . $(VENV_NAME)/bin/activate && python -m ipykernel install --user --name=analytics --display-name="Analytics"
 	@echo "$(GREEN)>>> Kernel installed successfully!$(RESET)"
 	@echo "$(YELLOW)>>> Available kernels:$(RESET)"
 	cd backend && . $(VENV_NAME)/bin/activate && jupyter kernelspec list
@@ -202,6 +210,10 @@ setup-jupyter: ## Install Jupyter dependencies
 test-notebook: ## Run MCP UI integration tests in Jupyter
 	@echo "$(CYAN)>>> Running MCP UI integration tests in Jupyter...$(RESET)"
 	cd backend && . $(VENV_NAME)/bin/activate && jupyter nbconvert --to notebook --execute $(NOTEBOOKS_DIR)/mcp_ui_integration_tests.ipynb --output $(NOTEBOOKS_DIR)/mcp_ui_integration_tests_executed.ipynb
+
+debug-tools: ## Debug MCP tools - list all available tools
+	@echo "$(CYAN)>>> Debugging MCP tools...$(RESET)"
+	cd backend && . $(VENV_NAME)/bin/activate && python debug_tools.py
 
 # Default target
 .DEFAULT_GOAL := help

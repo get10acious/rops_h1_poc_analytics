@@ -1,23 +1,21 @@
 # RewardOps Analytics - Natural Language Analytics POC
 
-A complete implementation of an intelligent admin homepage with natural language analytics capabilities. This project demonstrates a fully functional real-time analytics chatbot that can query loyalty program databases and generate visualizations using natural language, built with modern MCP (Model Context Protocol) integration.
+A complete implementation of an intelligent admin homepage with natural language analytics capabilities. This project demonstrates a fully functional real-time analytics chatbot that can query databases and generate visualizations using natural language, built with modern MCP (Model Context Protocol) integration.
 
 ## 🎯 Project Overview
 
-This is a **working implementation** of a dynamic, intelligent "mission control" for RewardOps loyalty program analytics. The system allows non-technical users to ask plain English questions about merchants, users, and redemption data, receiving interactive data visualizations in real-time.
+This is a **working implementation** of a dynamic, intelligent "mission control" for business analytics. The system allows non-technical users to ask plain English questions about loyalty program data and receive interactive data visualizations in real-time.
 
 ### Key Features
 
 - **Natural Language Queries**: Ask questions like "Show me the top 10 merchants by redemption volume this month"
-- **Interactive Chart.js Visualizations**: Automatic chart and table generation with export/fullscreen capabilities
-- **Complete Tool Ecosystem**: Database queries, Python code execution, and MCP-UI visualization generation
 - **Real-time Chat Interface**: WebSocket-based communication for instant responses
-- **Database Integration**: Direct PostgreSQL connection with RewardOps loyalty program data
-- **MCP Integration**: Model Context Protocol with automated PostgreSQL Toolbox setup
-- **Advanced AI Agent**: LangGraph-based ReAct agent with multi-iteration reasoning and composite tools
-- **Code Sandbox**: Python code execution for custom analytics and data processing
+- **Database Integration**: Direct connection to PostgreSQL with RewardOps loyalty program data
+- **Dynamic Visualizations**: Automatic chart generation using MCP UI servers
+- **MCP Integration**: Model Context Protocol with PostgreSQL Toolbox for extensible tool integration
+- **AI Agent Orchestration**: LangGraph-based ReAct agent for query processing
 - **Environment-Based Configuration**: Flexible configuration using environment variables
-- **Automated Setup**: One-command setup for MCP servers and database initialization
+- **Automated MCP Setup**: Dynamic download and configuration of MCP Toolbox
 
 ## 🏗️ Architecture
 
@@ -93,33 +91,9 @@ make start
 - **Backend API**: http://localhost:8000
 - **API Documentation**: http://localhost:8000/docs
 
-## ✨ Recent Updates
+## 📋 Challenge Brief
 
-This project has been updated with several key improvements:
-
-### 🔧 Enhanced Configuration
-- **Environment-Based Setup**: All configuration now uses environment variables
-- **Automatic .env Creation**: Template file created during setup
-- **Flexible Database Configuration**: Individual postgres connection parameters
-
-### 🤖 Improved MCP Integration  
-- **Automated MCP Setup**: `mcp_setup.py` downloads and configures PostgreSQL Toolbox
-- **Working MCP Configuration**: Uses proven format from mcpui-sandbox-chat
-- **Environment-Driven Config**: MCP servers configured from environment variables
-
-### 🗄️ Database Improvements
-- **RewardOps Schema**: Complete loyalty program database with realistic data
-- **Environment-Driven Init**: Database initialization uses environment settings
-- **Better Error Handling**: Improved logging and error management
-
-### 🚀 Streamlined Setup
-- **One-Command Setup**: `make install && make setup-mcp && make init-db && make start`
-- **Automatic Downloads**: MCP Toolbox downloaded automatically
-- **Consistent Naming**: Fixed case sensitivity issues across the codebase
-
-## 📋 Original Challenge Brief
-
-This project demonstrates a complete implementation of the **MCP UI Chat Analytics** system. It serves as both a working example and a foundation for further development.
+This template is designed for the **MCP UI Chat Analytics Hackathon**. Students will build upon this foundation to create a working natural language analytics system.
 
 ### Learning Objectives
 
@@ -215,7 +189,33 @@ rops_h1_poc_analytics/
 
 ## 🗄️ Database Schema
 
-The template includes a sample analytics database 
+The system includes a RewardOps loyalty program database with realistic sample data:
+
+### Tables
+
+- **merchants**: Retail partners in the loyalty program
+  - `id`, `merchant_name`, `category`, `created_at`, `status`
+- **users**: Loyalty program members  
+  - `id`, `email`, `first_name`, `last_name`, `created_at`, `status`
+- **redemptions**: Point redemption transactions
+  - `id`, `user_id`, `merchant_id`, `amount`, `points_used`, `redemption_date`, `status`
+
+### Sample Data
+
+- 15 merchants across various categories (Electronics, Fashion, Food & Beverage, etc.)
+- 30 sample users with realistic names and emails
+- 250+ redemption transactions spanning 6 months
+- Proper foreign key relationships and indexes
+
+### Database Initialization
+
+The database is automatically initialized with:
+
+```bash
+make init-db
+```
+
+This creates the database, tables, indexes, and inserts all sample data. 
 
 ## 🤖 AI Assistant Integration
 
@@ -230,27 +230,41 @@ This template is designed to work seamlessly with AI coding assistants. Key feat
 
 ### Environment Variables
 
-Create a `.env` file in the root directory:
+The `.env` file is automatically created from `env_template.txt` when you run `make setup-backend`. 
+
+Key environment variables (in `backend/.env`):
 
 ```env
-# Database
-DATABASE_URL=postgresql://analytics:password@localhost:5432/analytics_db
+# Database Configuration
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DATABASE=rewardops
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+
+# Redis Configuration
 REDIS_URL=redis://localhost:6379
 
-# API Keys (for production)
-OPENAI_API_KEY=your_openai_key_here
-GEMINI_API_KEY=your_gemini_key_here
+# API Keys
+OPENAI_API_KEY=your_openai_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
 
-# Development
-LOG_LEVEL=INFO
+# Application Configuration
 DEBUG=true
+LOG_LEVEL=INFO
+HOST=0.0.0.0
+PORT=8000
 ```
+
+The system builds the database URL automatically from the individual components, making it flexible for different environments.
 
 ### MCP Server Configuration
 
-The template includes pre-configured MCP servers:
-- **Database Toolbox**: For PostgreSQL queries
-- **MCP UI**: For visualization generation
+The system includes automated MCP server setup:
+- **PostgreSQL Toolbox**: Automatically downloaded and configured for database queries
+- **Filesystem Server**: For file system operations (optional)
+
+MCP servers are configured in `backend/mcp_servers/mcp_config.json` using the working format from mcpui-sandbox-chat.
 
 ## 🧪 Testing
 

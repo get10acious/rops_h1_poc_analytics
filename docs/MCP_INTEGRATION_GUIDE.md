@@ -4,13 +4,13 @@ This guide provides comprehensive instructions for setting up and using Model Co
 
 ## 🎯 Overview
 
-The MCP integration enables the system to use specialized tools for database operations and visualization generation. This guide covers:
+The MCP integration enables the system to use specialized tools for database operations and query processing. This guide covers:
 
-- MCP server setup and configuration
-- Database Toolbox integration
-- Vizro MCP integration
-- Client management and error handling
+- Automated MCP server setup and configuration  
+- PostgreSQL Toolbox integration
+- MCP client management and error handling
 - Testing and validation
+- Environment-based configuration
 
 ## 🏗️ Architecture
 
@@ -18,51 +18,93 @@ The MCP integration enables the system to use specialized tools for database ope
 ┌─────────────────┐    MCP Protocol    ┌─────────────────┐
 │   Backend       │◄──────────────────►│   MCP Servers   │
 │   (FastAPI)     │                    │                 │
-│                 │                    │ • Database      │
+│                 │                    │ • PostgreSQL    │
 │ MCP Client      │                    │   Toolbox       │
-│ Manager         │                    │ • Vizro MCP     │
+│ Manager         │                    │ • Filesystem    │
 └─────────────────┘                    └─────────────────┘
 ```
 
 ## 🛠️ MCP Server Setup
 
-### 1. Database Toolbox MCP
+### Automated Setup
 
-The Database Toolbox MCP provides SQL query execution capabilities for PostgreSQL databases.
-
-#### Installation
+The system now includes automated MCP server setup through the `mcp_setup.py` script:
 
 ```bash
-# Install the MCP server
-npm install -g @modelcontextprotocol/server-postgres
+# Setup MCP servers automatically
+make setup-mcp
+```
 
-# Or use npx for direct execution
-npx @modelcontextprotocol/server-postgres
+This will:
+- Download the PostgreSQL Toolbox binary automatically
+- Configure MCP servers based on environment variables
+- Create the proper configuration files
+
+### 1. PostgreSQL Toolbox MCP
+
+The PostgreSQL Toolbox MCP provides SQL query execution capabilities for PostgreSQL databases.
+
+#### Automatic Installation
+
+The toolbox is automatically downloaded and configured:
+
+```bash
+cd backend && python mcp_setup.py
 ```
 
 #### Configuration
 
-Create `backend/mcp_servers/database_config.json`:
+The system automatically creates `backend/mcp_servers/mcp_config.json`:
 
 ```json
 {
-  "mcpServers": {
-    "database": {
-      "command": "npx",
-      "args": ["@modelcontextprotocol/server-postgres"],
-      "env": {
-        "POSTGRES_CONNECTION_STRING": "postgresql://rewardops:password@localhost:5432/rewardops_db"
-      }
+  "servers": [
+    {
+      "name": "postgres_toolbox",
+      "enabled": true,
+      "connection_type": "stdio",
+      "command": "./mcp_servers/toolbox",
+      "args": ["--prebuilt", "postgres", "--stdio"],
+      "env_vars": {
+        "POSTGRES_HOST": "localhost",
+        "POSTGRES_PORT": "5432",
+        "POSTGRES_DATABASE": "rewardops",
+        "POSTGRES_USER": "postgres",
+        "POSTGRES_PASSWORD": "postgres"
+      },
+      "description": "PostgreSQL database operations via MCP Toolbox"
     }
-  }
+  ]
 }
 ```
 
 #### Available Tools
 
-- `db-toolbox:query` - Execute SQL queries
-- `db-toolbox:get_schema` - Get database schema information
-- `db-toolbox:list_tables` - List all tables in the database
+- `postgres-execute-sql` - Execute SQL statements  
+- `postgres-sql` - Query the database
+- Schema introspection tools
+
+### Environment-Based Configuration
+
+The MCP configuration automatically uses environment variables from your `.env` file:
+
+```python
+# In mcp_setup.py
+mcp_config = {
+    "servers": [
+        {
+            "name": "postgres_toolbox",
+            "env_vars": {
+                "POSTGRES_HOST": settings.postgres_host,
+                "POSTGRES_PORT": str(settings.postgres_port),
+                "POSTGRES_DATABASE": settings.postgres_database,
+                "POSTGRES_USER": settings.postgres_user,
+                "POSTGRES_PASSWORD": settings.postgres_password
+            }
+        }
+    ]
+}
+```
 
 ### 2. Vizro MCP
 
@@ -597,8 +639,8 @@ Create `.env` file:
 
 ```env
 # Database
-DATABASE_URL=postgresql://rewardops:password@localhost:5432/rewardops_db
-POSTGRES_CONNECTION_STRING=postgresql://rewardops:password@localhost:5432/rewardops_db
+DATABASE_URL=postgresql://analytics:password@localhost:5432/analytics_db
+POSTGRES_CONNECTION_STRING=postgresql://analytics:password@localhost:5432/analytics_db
 
 # MCP Configuration
 MCP_DATABASE_CONFIG=mcp_servers/database_config.json
@@ -619,8 +661,8 @@ services:
   postgres:
     image: postgres:15
     environment:
-      POSTGRES_DB: rewardops_db
-      POSTGRES_USER: rewardops
+      POSTGRES_DB: analytics_db
+      POSTGRES_USER: analytics
       POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
@@ -638,7 +680,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://rewardops:password@postgres:5432/rewardops_db
+      - DATABASE_URL=postgresql://analytics:password@postgres:5432/analytics_db
       - REDIS_URL=redis://redis:6379
     depends_on:
       - postgres
@@ -691,13 +733,13 @@ cat backend/mcp_servers/mcp_config.json
 #### 2. Database Connection Issues
 ```bash
 # Test database connection
-psql postgresql://rewardops:password@localhost:5432/rewardops_db -c "SELECT 1"
+psql postgresql://analytics:password@localhost:5432/analytics_db -c "SELECT 1"
 
 # Check database logs
 docker-compose logs postgres
 
 # Verify database schema
-psql postgresql://rewardops:password@localhost:5432/rewardops_db -c "\dt"
+psql postgresql://analytics:password@localhost:5432/analytics_db -c "\dt"
 ```
 
 #### 3. Visualization Generation Failures
@@ -737,4 +779,4 @@ logging.getLogger('mcp').setLevel(logging.DEBUG)
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [Vizro Documentation](https://vizro.mckinsey.com/)
 
-This guide provides a comprehensive foundation for MCP integration. Follow these patterns and practices to ensure reliable and maintainable MCP server integration in your RewardOps Analytics POC.
+This guide provides a comprehensive foundation for MCP integration. Follow these patterns and practices to ensure reliable and maintainable MCP server integration in your MCP UI Chat Analytics POC.

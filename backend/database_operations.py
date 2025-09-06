@@ -1,5 +1,5 @@
 """
-Database operations for RewardOps Analytics POC.
+Database operations for MCP UI Chat Analytics POC.
 
 This module provides database operations using the MCP Database Toolbox
 for executing SQL queries and retrieving data.
@@ -39,11 +39,9 @@ class DatabaseOperations:
         try:
             logger.debug(f"Executing query: {query}")
             
-            arguments = {"query": query}
-            if params:
-                arguments["params"] = params
+            arguments = {"sql": query}
             
-            result = await mcp_manager.call_tool(self.server_name, "db-toolbox:query", arguments)
+            result = await mcp_manager.call_tool("execute_sql", arguments)
             
             # Extract data from MCP response
             if "content" in result and result["content"]:
@@ -71,11 +69,9 @@ class DatabaseOperations:
             Schema information dictionary
         """
         try:
-            arguments = {}
-            if table_name:
-                arguments["table"] = table_name
+            arguments = {"table_names": table_name or "", "output_format": "detailed"}
             
-            result = await mcp_manager.call_tool(self.server_name, "db-toolbox:get_schema", arguments)
+            result = await mcp_manager.call_tool("list_tables", arguments)
             
             if "content" in result and result["content"]:
                 content = result["content"][0]
@@ -97,7 +93,7 @@ class DatabaseOperations:
             List of table names
         """
         try:
-            result = await mcp_manager.call_tool(self.server_name, "db-toolbox:list_tables", {})
+            result = await mcp_manager.call_tool("list_tables", {"table_names": "", "output_format": "simple"})
             
             if "content" in result and result["content"]:
                 content = result["content"][0]
