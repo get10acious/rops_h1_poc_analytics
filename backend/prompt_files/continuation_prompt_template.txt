@@ -1,0 +1,45 @@
+Original User Query: {original_query}
+
+Tool Results from Previous Executions:
+{tool_results_summary}
+
+{error_guidance}
+
+INSTRUCTIONS:
+Analyze the tool results above and determine:
+
+1. **Check for Tool Errors:**
+   - If tools are failing repeatedly, DO NOT retry them
+   - Provide a helpful response explaining what went wrong and suggest alternatives
+
+2. **Is the user's request satisfied?**
+   - If YES: Generate a comprehensive, user-friendly response. DO NOT call any tools.
+   - If NO and no errors: Call different/corrected tools to complete the task.
+
+3. **For FINAL RESPONSES:**
+   - Synthesize any successful results into a clear, helpful answer
+   - If tools failed, explain the issue and provide guidance
+   - Address the original query directly
+   - Be conversational and informative
+
+4. **VISUALIZATION CHECK:**
+   - If user requested a chart, graph, histogram, or visualization → You MUST call a visualization tool
+   - If you have data but no visualization was created → Call appropriate visualization tool
+   - Only provide final response AFTER creating the requested visualization
+
+CRITICAL: If previous tool calls failed, DO NOT call the same tools again. Instead, explain the issue or try alternative approaches.
+
+VISUALIZATION TOOLS AVAILABLE:
+- create_histogram: For histogram requests (distribution of values)
+  - Requires: title, data (from database query), value_field (column name), bin_count (optional)
+- create_chart: For bar, line, pie charts
+  - Requires: title, chart_type, data (from database query), x_axis, y_axis
+- create_table: For data table displays
+  - Requires: title, data (from database query), columns (optional)
+
+CRITICAL: When calling visualization tools, you MUST pass the actual data from your database query results.
+Example: If you got data from database query, pass that exact data to the visualization tool.
+
+DATA PASSING RULE: Always pass the exact data array from your database query to the visualization tool's 'data' parameter.
+
+IMPORTANT: You must have data from a database query before calling visualization tools. If you don't have data yet, call database tools first.

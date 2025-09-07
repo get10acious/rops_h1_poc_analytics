@@ -22,9 +22,15 @@ from config import settings
 from langraph_multi_mcp_tools import get_all_mcp_langraph_tools
 from mcp_multi_client import mcp_manager as multi_mcp_manager
 from mcp_ui_generator import mcp_ui_generator
+from prompt_manager import prompt_manager
 
 logger = logging.getLogger(__name__)
 
+code_related_keywords = [
+    'code example', 'code snippet', 
+    'python code', 'javascript code', 
+    'show me code', 'demonstrate code'
+]
 
 def ensure_json_serializable(obj: Any) -> Any:
     """Recursively ensure all objects are JSON serializable."""
@@ -260,7 +266,7 @@ class LangGraphReActAgent:
             # Add error message to state
             if "messages" not in state:
                 state["messages"] = []
-            state["messages"].append(AIMessage(content=f"Tool execution failed: {str(e)}"))
+            state["messages"].append(AIMessage(content=prompt_manager.get_tool_execution_error_message(str(e))))
             
             # Keep same iteration count on error
             state["iteration_count"] = state.get("iteration_count", 0)
@@ -298,7 +304,7 @@ class LangGraphReActAgent:
             state["current_step"] = "processing"
         
         # Check if this is a code-related query that requires execution
-        code_related_keywords = ['code example', 'code snippet', 'python code', 'javascript code', 'show me code', 'demonstrate code']
+        
         if any(keyword.lower() in user_query.lower() for keyword in code_related_keywords):
             logger.info("🧠 CODE-RELATED QUERY DETECTED: Must execute code before providing examples")
             # Force the agent to use code execution tools
@@ -317,10 +323,13 @@ class LangGraphReActAgent:
             if isinstance(result, dict) and not result.get("success", True):
                 failed_attempts += 1
         
+        # Reverse so that we can check from the last tool call
         for result in reversed(tool_results):
             if isinstance(result, dict) and not result.get("success", True):
+                # counts the recent consecutive failures
                 consecutive_failures += 1
             else:
+                # Stop checking if we find a successful tool result
                 break
         
         logger.info(f"🧠 REASONING: iteration={iteration_count}, tool_results={len(tool_results)}, is_continuation={is_continuation}, failed_attempts={failed_attempts}, consecutive_failures={consecutive_failures}")
@@ -335,8 +344,8 @@ class LangGraphReActAgent:
             state["goal_achieved"] = True
             if self.llm:
                 error_response = await self.llm.ainvoke([
-                    SystemMessage(content="You are a helpful assistant that explains technical issues."),
-                    HumanMessage(content=f"The user asked: '{user_query}'\n\nBut there were technical issues with the database tools. Please explain that there's a database connectivity or configuration issue and suggest they contact support.")
+                    SystemMessage(content=prompt_manager.get_technical_issue_system_message()),
+                    HumanMessage(content=prompt_manager.get_technical_issue_human_message(user_query))
                 ])
                 state["messages"].append(error_response)
                 state["reasoning"].append("Stopped due to repeated tool failures")
@@ -345,7 +354,7 @@ class LangGraphReActAgent:
         # Check for conversational queries (only on first iteration)
         if iteration_count == 0:
             # Skip conversational responses for code-related queries - they need tool execution
-            if any(keyword.lower() in user_query.lower() for keyword in ['code example', 'code snippet', 'python code', 'javascript code', 'show me code', 'demonstrate code']):
+            if any(keyword.lower() in user_query.lower() for keyword in code_related_keywords):
                 logger.info("🧠 CODE-RELATED QUERY: Skipping conversational response, forcing tool execution")
                 # Fall through to tool execution workflow
             else:
@@ -354,7 +363,7 @@ class LangGraphReActAgent:
                 if self.llm:
                     try:
                         # Generate a conversational response with conversation history if available
-                        conversation_messages = [SystemMessage(content="You are a friendly and helpful analytics assistant. You have access to the full conversation history and can reference previous exchanges with the user.")]
+                        conversation_messages = [SystemMessage(content=prompt_manager.get_conversational_system_message())]
                         
                         # Include ALL conversation context for better responses, especially for context references
                         if current_messages:
@@ -462,13 +471,13 @@ class LangGraphReActAgent:
                 logger.error(f"Reasoning node error: {e}")
                 reasoning.append(f"Reasoning error: {str(e)}")
                 # Add error message to state
-                state["messages"].append(AIMessage(content=f"I encountered an error: {str(e)}"))
+                state["messages"].append(AIMessage(content=prompt_manager.get_reasoning_error_message(str(e))))
                 state["reasoning"] = reasoning
                 state["current_step"] = "error"
         else:
             # Fallback without LLM
             reasoning.append("No LLM available - using heuristic analysis")
-            fallback_response = f"I understand you're asking: '{user_query}'. To provide detailed analytics, please configure a Google API key (GOOGLE_API_KEY) for enhanced AI processing with Gemini."
+            fallback_response = prompt_manager.get_fallback_response(user_query)
             state["messages"].append(AIMessage(content=fallback_response))
             state["reasoning"] = reasoning
             state["current_step"] = "schema_discovery"
@@ -477,221 +486,44 @@ class LangGraphReActAgent:
     
 
     
-    def _get_system_prompt(self, iteration_count: int = 0, tool_results: List[Dict[str, Any]] = None, messages: List[BaseMessage] = None) -> str:
-        """Get the system prompt for the ReAct agent with iteration context and conversation history."""
+    def _get_system_prompt(self, 
+                           iteration_count: int = 0, 
+                           tool_results: List[Dict[str, Any]] = None, 
+                           messages: List[BaseMessage] = None) -> str:
+        """
+        Get the system prompt for the ReAct agent 
+        with iteration context and conversation history.
+        """
         available_tools = [f"- {tool.name}: {tool.description}" for tool in self.tools]
         tools_list = "\n".join(available_tools)
         
-        # 🔥 FIX: Add conversation context to system prompt
+        # Add conversation context to system prompt
         conversation_context = ""
         if messages and len(messages) > 1:
             # Count previous exchanges (excluding current message)
             previous_exchanges = (len(messages) - 1) // 2  # Rough estimate of back-and-forth
-            conversation_context = f"""
-IMPORTANT - CONVERSATION MEMORY:
-You DO have access to the full conversation history in this session. There are {len(messages)} total messages in this conversation.
-When users ask "what did I ask earlier?" or "what was my previous question?", you CAN and SHOULD reference the conversation history.
-You can see all previous user messages and your own responses. Use this context to provide helpful, contextual responses.
-
-CONVERSATION CONTEXT:
-You are continuing an ongoing conversation with {previous_exchanges} previous exchanges in this session.
-Always consider the conversation history when responding to maintain context and provide relevant follow-up information.
-If the user refers to something from earlier, reference the specific messages in the conversation history.
-"""
+            conversation_context = prompt_manager.get_conversation_memory_context(
+                message_count=len(messages),
+                previous_exchanges=previous_exchanges
+            )
         
-        base_prompt = f"""You are an expert data analyst AI for LoyaltyAnalytics platform.
-
-Your role is to help users analyze their e-commerce and redemption data using natural language queries.
-{conversation_context}
-Available Tools:
-{tools_list}
-
-Database Schema Context:
-The database contains three main tables:
-- **merchants**: Store information (id, merchant_name, category, created_at, status)
-- **users**: Customer information (id, email, first_name, last_name, created_at, status)  
-- **redemptions**: Transaction data (id, user_id, merchant_id, amount, points_used, redemption_date, status)
-
-**IMPORTANT**: Use these exact table names in your SQL queries:
-- ✅ Use: `redemptions` (not redemption_data)
-- ✅ Use: `merchants` (not merchant_data)
-- ✅ Use: `users` (not user_data)
-
-Current date: {datetime.now().strftime('%Y-%m-%d')}
-"""
+        # Get base prompt from prompt manager
+        base_prompt = prompt_manager.get_base_system_prompt(
+            conversation_context=conversation_context,
+            tools_list=tools_list
+        )
 
         if iteration_count == 0:
-            return base_prompt + """
-Your Process:
-1. UNDERSTAND: Analyze the user's question to understand what data they need
-2. PLAN: Determine what SQL query will get the required data
-3. EXECUTE: Use tools to get schema (if needed), execute queries, and create visualizations
-4. RESPOND: Provide clear, helpful responses with appropriate visualizations
-
-SPECIAL INSTRUCTIONS FOR CODE EXAMPLES:
-- When user asks for code examples → EXECUTE the code first using sandbox tools
-- When user asks for code explanations → EXECUTE the code first using sandbox tools
-- When user asks for programming help → EXECUTE the code first using sandbox tools
-- NEVER provide code blocks without execution
-
-Guidelines:
-- Always use safe, read-only SQL queries
-- Choose appropriate visualization types for the data
-- Provide clear explanations of your analysis
-- If the query is ambiguous, ask for clarification
-- For complex requests, break them down into steps (e.g., first get data, then create visualization)
-
-CODE EXAMPLE RULES - ABSOLUTELY CRITICAL:
-- **NEVER provide code examples without executing them first in the sandbox**
-- **NEVER show ```python or ```javascript blocks without running the code first**
-- **ALWAYS execute code through execute_python_code or execute_code tools before showing examples**
-- **If user asks for code examples, execute them first, then show working code with results**
-- **This ensures all code examples are tested and functional**
-- **VIOLATION: If you see code blocks in your response, you MUST execute them first**
-
-VISUALIZATION REQUIREMENTS:
-- If user asks for chart, graph, histogram, visualization, or figure → You MUST create a visualization
-- **CRITICAL: ALWAYS use these composite tools for visualizations:**
-  - **create_chart_from_data**: Creates chart from database query + optional code processing
-  - **create_table_from_data**: Creates table from database query + optional code processing  
-  - **create_histogram_from_data**: Creates histogram from database query + optional code processing
-- **FORBIDDEN: NEVER use these deprecated tools:**
-  - ❌ create_chart (DEPRECATED - requires pre-fetched data)
-  - ❌ create_table (DEPRECATED - requires pre-fetched data)  
-  - ❌ create_histogram (DEPRECATED - requires pre-fetched data)
-- ALWAYS query the database FIRST to get data, THEN create visualizations
-- NEVER provide final response without creating requested visualizations
-- These tools handle the complete workflow: Database Query → Code Processing → UIResource Generation
-- No raw data is sent to the LLM - only the final UIResource
-- Use these for all data visualization requests
-
-WORKFLOW OPTIONS:
-1) **RECOMMENDED: Composite Data Tools**: Use create_chart_from_data, create_table_from_data, create_histogram_from_data
-   - Single tool call handles: Database Query → Code Processing → UIResource Generation
-   - No raw data sent to LLM
-   - Cleaner, more efficient workflow
-
-PYTHON SANDBOX - CRITICAL RULES:
-- execute_python_code: Execute Python code for data analysis, processing, or custom visualizations
-- Use this when you need to process data, create custom calculations, or generate visualizations
-- **NEVER provide code examples without executing them first in the sandbox**
-- **ALWAYS run code through the sandbox before showing results to users**
-- **If user asks for code examples, execute them first, then show working code with results**
-- Example workflow: Execute code → Show results → Provide working code example
-"""
+            return base_prompt + "\n" + prompt_manager.get_initial_process_instructions()
         else:
-            return base_prompt + f"""
-CONTINUATION MODE - Iteration {iteration_count}:
-You have already executed some tools. Review what has been accomplished so far and determine:
-
-1. Is the user's original request fully satisfied?
-2. Do you need additional tools to complete the task?
-3. Should you create a visualization if data was retrieved?
-4. Are you ready to provide a final response?
-
-Previous tool executions: {len(tool_results) if tool_results else 0}
-
-Decision Logic:
-- If you have data but need visualization → Call visualization tool
-- If you need more data or different analysis → Call appropriate database/analysis tools  
-- If the task is complete → **IMPORTANT: Provide NO tool calls to proceed to final response**
-- Always consider multi-step workflows (data retrieval → analysis → visualization)
-
-CRITICAL: When you have sufficient data to answer the user's question, DO NOT call more tools. 
-Simply provide your analysis without any tool calls to generate the final response.
-
-VISUALIZATION LOGIC:
-- If the user asks for a chart, graph, histogram, visualization, or figure → You MUST call a visualization tool
-- **CRITICAL: ALWAYS use composite tools**: create_chart_from_data, create_table_from_data, create_histogram_from_data
-- **NEVER use the basic create_chart, create_table, or create_histogram tools**
-- Only provide final response AFTER creating the requested visualization
-
-Guidelines for Tool Selection:
-- **VISUALIZATION: ALWAYS use composite tools (create_chart_from_data, create_table_from_data, create_histogram_from_data)**
-- **NEVER use basic visualization tools (create_chart, create_table, create_histogram)**
-- Use file system tools for saving results or accessing configurations
-- **Use Python sandbox tools to execute ANY code examples before providing them to users**
-- **Stop calling tools once you have what you need to answer the question**
-
-CODE EXECUTION REQUIREMENTS:
-- **NEVER provide code examples without executing them first**
-- **ALWAYS use execute_python_code tool for Python examples**
-- **ALWAYS use execute_code tool for other language examples**
-- **Show execution results, then provide working code**
-"""
+            return base_prompt + "\n" + prompt_manager.get_continuation_mode_instructions(
+                iteration_count=iteration_count,
+                tool_results_count=len(tool_results) if tool_results else 0
+            )
     
     def _build_continuation_prompt(self, original_query: str, tool_results: List[Dict[str, Any]]) -> str:
         """Build a prompt for continuation iterations based on previous tool results."""
-        results_summary = []
-        has_errors = False
-        has_successful_data = False
-        
-        for i, result in enumerate(tool_results):
-            content_preview = str(result.get("content", ""))[:500]  # Show more content for better analysis
-            success = result.get("success", True)
-            if not success:
-                has_errors = True
-                results_summary.append(f"Tool Result {i+1} (FAILED): {content_preview}")
-            else:
-                has_successful_data = True
-                results_summary.append(f"Tool Result {i+1} (SUCCESS): {content_preview}")
-        
-        error_guidance = ""
-        if has_errors and not has_successful_data:
-            error_guidance = """
-⚠️ CRITICAL: Previous tool calls have FAILED with errors. DO NOT retry the same tool calls.
-Instead, provide a helpful response explaining what went wrong and suggest alternatives.
-"""
-        elif has_errors:
-            error_guidance = """
-⚠️ Some tool calls failed, but you have some successful data. Use the successful data to answer.
-"""
-        
-        return f"""Original User Query: {original_query}
-
-Tool Results from Previous Executions:
-{chr(10).join(results_summary)}
-
-{error_guidance}
-
-INSTRUCTIONS:
-Analyze the tool results above and determine:
-
-1. **Check for Tool Errors:**
-   - If tools are failing repeatedly, DO NOT retry them
-   - Provide a helpful explanation and suggest alternatives
-
-2. **Is the user's request satisfied?**
-   - If YES: Generate a comprehensive, user-friendly response. DO NOT call any tools.
-   - If NO and no errors: Call different/corrected tools to complete the task.
-
-3. **For FINAL RESPONSES:**
-   - Synthesize any successful results into a clear, helpful answer
-   - If tools failed, explain the issue and provide guidance
-   - Address the original query directly
-   - Be conversational and informative
-
-4. **VISUALIZATION CHECK:**
-   - If user requested a chart, graph, histogram, or visualization → You MUST call a visualization tool
-   - If you have data but no visualization was created → Call appropriate visualization tool
-   - Only provide final response AFTER creating the requested visualization
-
-CRITICAL: If previous tool calls failed, DO NOT call the same tools again. Instead, explain the issue or try alternative approaches.
-
-VISUALIZATION TOOLS AVAILABLE:
-- create_histogram: For histogram requests (distribution of values)
-  - Requires: title, data (from database query), value_field (column name), bin_count (optional)
-- create_chart: For bar, line, pie charts
-  - Requires: title, chart_type, data (from database query), x_axis, y_axis
-- create_table: For data table displays
-  - Requires: title, data (from database query), columns (optional)
-
-CRITICAL: When calling visualization tools, you MUST pass the actual data from your database query results.
-Example: If you got data from database query, pass that exact data to the visualization tool.
-
-DATA PASSING RULE: Always pass the exact data array from your database query to the visualization tool's 'data' parameter.
-
-IMPORTANT: You must have data from a database query before calling visualization tools. If you don't have data yet, call database tools first."""
+        return prompt_manager.get_continuation_prompt(original_query, tool_results)
     
     async def process_query(self, user_query: str, session_id: str) -> Dict[str, Any]:
         """

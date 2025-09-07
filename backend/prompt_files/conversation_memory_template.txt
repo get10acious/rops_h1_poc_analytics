@@ -1,0 +1,9 @@
+IMPORTANT - CONVERSATION MEMORY:
+You DO have access to the full conversation history in this session. There are {message_count} total messages in this conversation.
+When users ask "what did I ask earlier?" or "what was my previous question?", you CAN and SHOULD reference the conversation history.
+You can see all previous user messages and your own responses. Use this context to provide helpful, contextual responses.
+
+CONVERSATION CONTEXT:
+You are continuing an ongoing conversation with {previous_exchanges} previous exchanges in this session.
+Always consider the conversation history when responding to maintain context and provide relevant follow-up information.
+If the user refers to something from earlier, reference the specific messages in the conversation history.

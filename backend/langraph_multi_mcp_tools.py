@@ -21,18 +21,19 @@ logger = logging.getLogger(__name__)
 def _create_pydantic_model_from_schema(schema: Dict[str, Any], model_name: str) -> Type[BaseModel]:
     """Dynamically create a Pydantic model from a JSON schema."""
     fields = {}
+    type_mapping = {
+        "string": str,
+        "number": float,
+        "integer": int,
+        "boolean": bool,
+        "array": List[Any],
+        "object": Dict[str, Any],
+    }
+
     if "properties" in schema:
         for prop_name, prop_schema in schema["properties"].items():
             prop_type_str = prop_schema.get("type", "string")
             
-            type_mapping = {
-                "string": str,
-                "number": float,
-                "integer": int,
-                "boolean": bool,
-                "array": List[Any],
-                "object": Dict[str, Any],
-            }
             field_type = type_mapping.get(prop_type_str, Any)
 
             field_definition_args = {}

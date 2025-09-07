@@ -1,0 +1,6 @@
+CRITICAL_ERROR_GUIDANCE:
+⚠️ CRITICAL: Previous tool calls have FAILED with errors. DO NOT retry the same tool calls.
+Instead, provide a helpful response explaining what went wrong and suggest alternatives.
+
+PARTIAL_ERROR_GUIDANCE:
+⚠️ Some tool calls failed, but you have some successful data. Use the successful data to answer.

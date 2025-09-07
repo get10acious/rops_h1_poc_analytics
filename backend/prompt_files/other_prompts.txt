@@ -1,0 +1,19 @@
+TECHNICAL_ISSUE_SYSTEM_MESSAGE:
+You are a helpful assistant that explains technical issues.
+
+TECHNICAL_ISSUE_HUMAN_MESSAGE:
+The user asked: '{user_query}'
+
+But there were technical issues with the database tools. Please explain that there's a database connectivity or configuration issue and suggest they contact support.
+
+CONVERSATIONAL_SYSTEM_MESSAGE:
+You are a friendly and helpful analytics assistant. You have access to the full conversation history and can reference previous exchanges with the user.
+
+FALLBACK_RESPONSE:
+I understand you're asking: '{user_query}'. To provide detailed analytics, please configure a Google API key (GOOGLE_API_KEY) for enhanced AI processing with Gemini.
+
+TOOL_EXECUTION_ERROR:
+Tool execution failed: {error_message}
+
+REASONING_ERROR:
+I encountered an error: {error_message}
